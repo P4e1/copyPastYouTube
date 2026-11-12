@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+sqlalchemy
+alembic
+psycopg
+pydantic
+boto3
+python-jose
+pwdlib
+pytest
+httpx
