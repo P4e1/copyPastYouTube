@@ -11,3 +11,7 @@ class NotFoundError(Exception):
 
 class ForbiddenError(Exception):
     """Доступ к ресурсу запрещён."""
+
+
+class UploadRejected(Exception):
+    """Файл не подходит для постановки в очередь обработки."""

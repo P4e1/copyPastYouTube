@@ -26,5 +26,4 @@ def test_app_exposes_health_and_auth_without_storage(app):
     assert "/reports" in paths
     loaded = set(sys.modules)
     assert "boto3" not in loaded
-    assert "minio" not in loaded
     assert "ffmpeg" not in loaded

@@ -1,4 +1,4 @@
-"""Сборка сценариев видео поверх сессии и заглушки хранилища."""
+"""Сборка сценариев видео поверх сессии и выбранного хранилища."""
 
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -6,11 +6,9 @@ from contextlib import contextmanager
 from sqlalchemy.orm import Session
 
 from app.application.videos import VideoCard, create_video, list_feed, open_video, search_videos
-from app.domain.storage import FakeObjectStorage
+from app.domain.storage import ObjectStorage
 from app.infrastructure import db
 from app.infrastructure.video_repository import SqlVideoRepository
-
-_storage = FakeObjectStorage()
 
 
 @contextmanager
@@ -28,26 +26,29 @@ def _session_scope() -> Iterator[Session]:
         session.close()
 
 
-def create_video_for_channel(
-    *,
-    channel_id: str,
-    owner_id: str,
-    title: str,
-    description: str,
-    visibility: str,
-    grant_user_ids: list[str],
-) -> tuple[VideoCard, str]:
-    with _session_scope() as session:
-        return create_video(
-            SqlVideoRepository(session),
-            _storage,
-            channel_id=channel_id,
-            owner_id=owner_id,
-            title=title,
-            description=description,
-            visibility=visibility,
-            grant_user_ids=grant_user_ids,
-        )
+def bind_create_video(storage: ObjectStorage):
+    def create_video_for_channel(
+        *,
+        channel_id: str,
+        owner_id: str,
+        title: str,
+        description: str,
+        visibility: str,
+        grant_user_ids: list[str],
+    ) -> tuple[VideoCard, str]:
+        with _session_scope() as session:
+            return create_video(
+                SqlVideoRepository(session),
+                storage,
+                channel_id=channel_id,
+                owner_id=owner_id,
+                title=title,
+                description=description,
+                visibility=visibility,
+                grant_user_ids=grant_user_ids,
+            )
+
+    return create_video_for_channel
 
 
 def video_card(video_id: str, viewer_id: str | None) -> VideoCard:

@@ -9,3 +9,4 @@ python-jose
 pwdlib[argon2]
 pytest
 httpx
+minio

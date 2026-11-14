@@ -14,6 +14,7 @@ from app.infrastructure.db import Base
 import app.infrastructure.auth_models  # noqa: F401
 import app.infrastructure.channel_models  # noqa: F401
 import app.infrastructure.engagement_models  # noqa: F401
+import app.infrastructure.media_models  # noqa: F401
 import app.infrastructure.moderation_models  # noqa: F401
 import app.infrastructure.video_models  # noqa: F401
 

@@ -3,7 +3,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
-from app.domain.errors import ForbiddenError, NotFoundError
+from app.domain.errors import ForbiddenError, NotFoundError, UploadRejected
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -16,3 +16,8 @@ def register_exception_handlers(app: FastAPI) -> None:
     def forbidden(_request, exc: ForbiddenError) -> JSONResponse:
         detail = str(exc) or "Доступ запрещён"
         return JSONResponse(status_code=403, content={"detail": detail})
+
+    @app.exception_handler(UploadRejected)
+    def upload_rejected(_request, exc: UploadRejected) -> JSONResponse:
+        detail = str(exc) or "Файл не принят"
+        return JSONResponse(status_code=422, content={"detail": detail})
