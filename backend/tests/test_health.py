@@ -19,7 +19,10 @@ def test_app_exposes_health_and_auth_without_storage(app):
     assert "/auth/register" in paths
     assert "/auth/login" in paths
     assert "/auth/me" in paths
-    later = {"/videos", "/feed", "/search", "/playlists", "/reports"}
+    assert "/videos" in paths
+    assert "/feed" in paths
+    assert "/search" in paths
+    later = {"/playlists", "/reports"}
     assert paths.isdisjoint(later)
     loaded = set(sys.modules)
     assert "boto3" not in loaded

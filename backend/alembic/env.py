@@ -12,6 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.infrastructure.db import Base
 import app.infrastructure.auth_models  # noqa: F401
+import app.infrastructure.video_models  # noqa: F401
 
 config = context.config
 
