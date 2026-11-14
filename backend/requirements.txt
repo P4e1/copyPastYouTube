@@ -2,7 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 alembic
-psycopg
+psycopg[binary]
 pydantic
 boto3
 python-jose

@@ -1,10 +1,9 @@
 """Точка входа HTTP API.
 
-На шаге реализации здесь собирается приложение FastAPI.
-Роутеры подключаются только из presentation и вызывают сценарии application.
-Сборка приложения, маршруты и Swagger появятся вместе с первыми тестами.
+create_app собирает FastAPI, проверку PostgreSQL и Swagger /docs.
+Секрет подключения читается из DATABASE_URL.
 
-Планируемые роутеры:
+Планируемые роутеры модулей подключаются в следующих срезах:
 - auth: /auth/register, /auth/login, /auth/me
 - videos: /videos, /videos/{id}, /videos/{id}/complete, /videos/{id}/playback,
   /videos/{id}/view, /videos/{id}/like, /videos/{id}/comments
@@ -13,12 +12,22 @@
 - playlists: /playlists
 - moderation: /reports, /moderation/reports, /moderation/videos/{id}/hide
 - admin: /admin/users/{id}/role
-- health: /health
 """
 
+import os
 
-def create_app():
-    """Собрать приложение FastAPI. Реализации ещё нет."""
-    raise NotImplementedError(
-        "HTTP-приложение ещё не собрано. См. docs/architecture.md и backend/README.md."
-    )
+from fastapi import FastAPI
+
+from app.infrastructure.db import check_database, init_engine
+from app.presentation.errors import register_exception_handlers
+from app.presentation.health import router as health_router
+
+
+def create_app() -> FastAPI:
+    database_url = os.environ["DATABASE_URL"]
+    init_engine(database_url)
+    app = FastAPI(title="CopyPast YouTube")
+    app.state.check_database = check_database
+    register_exception_handlers(app)
+    app.include_router(health_router)
+    return app

@@ -66,4 +66,4 @@ flowchart TB
 pytest backend/tests
 ```
 
-Каталог тестов пока содержит только правило порядка срезов в `conftest.py`.
+Каркас бэкенда уже отвечает на `GET /health` и открывает `/docs`. Команда тестовой базы и `pytest backend/tests` записаны в [backend/README.md](backend/README.md).

@@ -27,7 +27,7 @@ flowchart TB
 
 Внутри слоёв код режется по темам: `auth`, `videos`, `feed`, `channels`, `playlists`, `moderation`, `media`. Пользователь, роль и правила видимости видео объявляются один раз в `domain`.
 
-Точка входа [app/main.py](app/main.py) только собирает приложение и подключает роутеры. Сейчас `create_app()` ещё не собрано.
+Точка входа [app/main.py](app/main.py) собирает приложение: проверка `GET /health`, Swagger `/docs` и перевод доменных ошибок «не найдено» и «запрещено» в ответы 404 и 403. Адрес PostgreSQL читается из `DATABASE_URL`. Роутеры модулей (auth, видео, канал, модерация) подключаются в следующих срезах. MinIO и ffmpeg каркас не импортирует.
 
 ## Сценарии приложения
 
@@ -50,10 +50,19 @@ flowchart TB
 
 ## Тесты
 
-Тесты пишутся до кода. Порядок срезов зафиксирован в [tests/conftest.py](tests/conftest.py). Запуск из корня репозитория:
+Тесты пишутся до кода. Порядок срезов зафиксирован в [tests/conftest.py](tests/conftest.py). Каркас проверяет `GET /health`, открытие `/docs` и отсутствие бизнес-маршрутов. Следующий срез — регистрация и вход.
+
+Поднять только PostgreSQL из compose (остальные сервисы не стартуют):
 
 ```bash
+cp .env.example .env
+docker compose --profile later up -d postgres
+export DATABASE_URL=postgresql+psycopg://youtube:change-me@localhost:5432/youtube
 pytest backend/tests
 ```
 
-Сейчас тестов нет: команда завершится сообщением, что собирать нечего. Первый срез — регистрация и вход против PostgreSQL.
+`DATABASE_URL` обязателен: без него тесты каркаса останавливаются, а не пропускаются. Пустая миграция каркаса применяется из корня репозитория:
+
+```bash
+alembic -c backend/alembic.ini upgrade head
+```
