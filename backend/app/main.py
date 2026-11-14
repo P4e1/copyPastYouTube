@@ -20,6 +20,7 @@ create_app собирает FastAPI, проверку PostgreSQL, Swagger /docs 
 import os
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.infrastructure.auth_gateway import account_by_token, login_account, register_account
 from app.infrastructure.db import check_database, init_engine
@@ -64,6 +65,20 @@ def create_app() -> FastAPI:
     init_engine(database_url)
     storage = build_storage()
     app = FastAPI(title="CopyPast YouTube")
+    origins = [
+        item.strip()
+        for item in os.environ.get(
+            "CORS_ORIGINS",
+            "http://127.0.0.1:5173,http://localhost:5173",
+        ).split(",")
+        if item.strip()
+    ]
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.state.object_storage = storage
     app.state.check_database = check_database
     app.state.register_account = register_account

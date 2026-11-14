@@ -27,3 +27,11 @@ def test_app_exposes_health_and_auth_without_storage(app):
     loaded = set(sys.modules)
     assert "boto3" not in loaded
     assert "ffmpeg" not in loaded
+
+
+def test_cors_allows_only_frontend_origin(client):
+    allowed = client.get("/health", headers={"Origin": "http://127.0.0.1:5173"})
+    foreign = client.get("/health", headers={"Origin": "https://evil.example"})
+
+    assert allowed.headers["access-control-allow-origin"] == "http://127.0.0.1:5173"
+    assert "access-control-allow-origin" not in foreign.headers
