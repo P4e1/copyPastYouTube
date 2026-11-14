@@ -9,11 +9,11 @@ create_app собирает FastAPI, проверку PostgreSQL, Swagger /docs 
 - engagement: POST /videos/{id}/view, POST /videos/{id}/like, GET и POST /videos/{id}/comments, DELETE /videos/{id}/comments/{comment_id}
 - channels: GET /channels/{id}, PATCH /channels/{id}, POST и DELETE /channels/{id}/subscribe
 - playlists: GET и POST /playlists, POST /playlists/{id}/items
+- moderation: POST /reports, GET /moderation/reports, POST /moderation/videos/{id}/hide, POST /moderation/videos/{id}/restore
+- admin: PATCH /admin/users/{id}/role
 
 Планируемые роутеры следующих срезов:
 - videos: /videos/{id}/complete, /videos/{id}/playback
-- moderation: /reports, /moderation/reports, /moderation/videos/{id}/hide
-- admin: /admin/users/{id}/role
 """
 
 import os
@@ -38,12 +38,20 @@ from app.infrastructure.channel_gateway import (
     unsubscribe_channel,
     update_channel_name,
 )
+from app.infrastructure.moderation_gateway import (
+    change_user_role,
+    file_report,
+    hide_reported_video,
+    queue_reports,
+    restore_hidden_video,
+)
 from app.infrastructure.video_gateway import create_video_for_channel, feed_cards, search_cards, video_card
 from app.presentation.auth import router as auth_router
 from app.presentation.channels import router as channel_router
 from app.presentation.engagement import router as engagement_router
 from app.presentation.errors import register_exception_handlers
 from app.presentation.health import router as health_router
+from app.presentation.moderation import router as moderation_router
 from app.presentation.videos import router as video_router
 
 
@@ -71,10 +79,16 @@ def create_app() -> FastAPI:
     app.state.open_playlist = open_playlist
     app.state.place_playlist_item = place_playlist_item
     app.state.channel_playlists = channel_playlists
+    app.state.file_report = file_report
+    app.state.queue_reports = queue_reports
+    app.state.hide_reported_video = hide_reported_video
+    app.state.restore_hidden_video = restore_hidden_video
+    app.state.change_user_role = change_user_role
     register_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(video_router)
     app.include_router(engagement_router)
     app.include_router(channel_router)
+    app.include_router(moderation_router)
     return app
