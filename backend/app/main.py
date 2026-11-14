@@ -7,11 +7,11 @@ create_app собирает FastAPI, проверку PostgreSQL, Swagger /docs 
 - auth: /auth/register, /auth/login, /auth/me
 - videos: POST /videos, GET /videos/{id}, GET /feed, GET /search
 - engagement: POST /videos/{id}/view, POST /videos/{id}/like, GET и POST /videos/{id}/comments, DELETE /videos/{id}/comments/{comment_id}
+- channels: GET /channels/{id}, PATCH /channels/{id}, POST и DELETE /channels/{id}/subscribe
+- playlists: GET и POST /playlists, POST /playlists/{id}/items
 
 Планируемые роутеры следующих срезов:
 - videos: /videos/{id}/complete, /videos/{id}/playback
-- channels: /channels/{id}, /channels/{id}/subscribe
-- playlists: /playlists
 - moderation: /reports, /moderation/reports, /moderation/videos/{id}/hide
 - admin: /admin/users/{id}/role
 """
@@ -29,8 +29,18 @@ from app.infrastructure.engagement_gateway import (
     register_like,
     register_view,
 )
+from app.infrastructure.channel_gateway import (
+    channel_card,
+    channel_playlists,
+    open_playlist,
+    place_playlist_item,
+    subscribe_channel,
+    unsubscribe_channel,
+    update_channel_name,
+)
 from app.infrastructure.video_gateway import create_video_for_channel, feed_cards, search_cards, video_card
 from app.presentation.auth import router as auth_router
+from app.presentation.channels import router as channel_router
 from app.presentation.engagement import router as engagement_router
 from app.presentation.errors import register_exception_handlers
 from app.presentation.health import router as health_router
@@ -54,9 +64,17 @@ def create_app() -> FastAPI:
     app.state.publish_comment = publish_comment
     app.state.comments_for_video = comments_for_video
     app.state.delete_own_comment = delete_own_comment
+    app.state.channel_card = channel_card
+    app.state.update_channel_name = update_channel_name
+    app.state.subscribe_channel = subscribe_channel
+    app.state.unsubscribe_channel = unsubscribe_channel
+    app.state.open_playlist = open_playlist
+    app.state.place_playlist_item = place_playlist_item
+    app.state.channel_playlists = channel_playlists
     register_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(auth_router)
     app.include_router(video_router)
     app.include_router(engagement_router)
+    app.include_router(channel_router)
     return app
