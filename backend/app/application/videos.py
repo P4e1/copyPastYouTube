@@ -18,6 +18,12 @@ class VideoCard:
     object_key: str
     channel_id: str
     hidden_mark: bool
+    view_count: int = 0
+    duration_sec: int = 0
+    created_at: str = ""
+    channel_name: str = ""
+    thumbnail_key: str | None = None
+    thumbnail_url: str | None = None
 
 
 @dataclass(frozen=True)
@@ -31,6 +37,11 @@ class StoredVideo:
     status: str
     object_key: str
     grant_user_ids: frozenset[str]
+    view_count: int = 0
+    duration_sec: int = 0
+    created_at: str = ""
+    channel_name: str = ""
+    thumbnail_key: str | None = None
 
 
 class VideoRepository:
@@ -77,6 +88,11 @@ def _card(stored: StoredVideo, hidden_mark: bool) -> VideoCard:
         object_key=stored.object_key,
         channel_id=stored.channel_id,
         hidden_mark=hidden_mark,
+        view_count=stored.view_count,
+        duration_sec=stored.duration_sec,
+        created_at=stored.created_at,
+        channel_name=stored.channel_name,
+        thumbnail_key=stored.thumbnail_key,
     )
 
 

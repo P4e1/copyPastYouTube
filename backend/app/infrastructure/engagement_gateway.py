@@ -5,7 +5,15 @@ from contextlib import contextmanager
 
 from sqlalchemy.orm import Session
 
-from app.application.engagement import Comment, add_comment, list_comments, record_view, remove_comment, set_like
+from app.application.engagement import (
+    Comment,
+    add_comment,
+    list_comments,
+    reaction_counts,
+    record_view,
+    remove_comment,
+    set_like,
+)
 from app.infrastructure import db
 from app.infrastructure.engagement_repository import SqlEngagementRepository
 from app.infrastructure.video_repository import SqlVideoRepository
@@ -29,6 +37,11 @@ def _session_scope() -> Iterator[Session]:
 def register_view(video_id: str, viewer_id: str) -> int:
     with _session_scope() as session:
         return record_view(SqlVideoRepository(session), SqlEngagementRepository(session), video_id, viewer_id)
+
+
+def reactions_for(video_id: str, viewer_id: str | None) -> tuple[int, int, int]:
+    with _session_scope() as session:
+        return reaction_counts(SqlEngagementRepository(session), video_id, viewer_id)
 
 
 def register_like(video_id: str, user_id: str, value: int) -> int:

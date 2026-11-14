@@ -29,6 +29,11 @@ class VideoOut(BaseModel):
     channel_id: str
     hidden_mark: bool
     upload_url: str | None = None
+    view_count: int = 0
+    duration_sec: int = 0
+    created_at: str = ""
+    channel_name: str = ""
+    thumbnail_url: str | None = None
 
 
 class VideoListOut(BaseModel):
@@ -69,6 +74,11 @@ def _out(card, upload_url: str | None = None) -> VideoOut:
         channel_id=card.channel_id,
         hidden_mark=card.hidden_mark,
         upload_url=upload_url,
+        view_count=card.view_count,
+        duration_sec=card.duration_sec,
+        created_at=card.created_at,
+        channel_name=card.channel_name,
+        thumbnail_url=card.thumbnail_url,
     )
 
 

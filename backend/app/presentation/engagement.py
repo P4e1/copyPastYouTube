@@ -28,8 +28,15 @@ class LikeOut(BaseModel):
 class CommentOut(BaseModel):
     id: str
     user_id: str
+    username: str = ""
     parent_id: str | None
     body: str
+
+
+class ReactionsOut(BaseModel):
+    likes: int
+    dislikes: int
+    mine: int
 
 
 class CommentListOut(BaseModel):
@@ -51,9 +58,24 @@ def _comment_out(comment) -> CommentOut:
     return CommentOut(
         id=comment.id,
         user_id=comment.user_id,
+        username=comment.username,
         parent_id=comment.parent_id,
         body=comment.body,
     )
+
+
+@router.get("/videos/{video_id}/reactions", response_model=ReactionsOut)
+def reactions(video_id: str, request: Request) -> ReactionsOut:
+    header = request.headers.get("authorization", "")
+    scheme, _, token = header.partition(" ")
+    viewer_id = None
+    if scheme.lower() == "bearer" and token.strip():
+        try:
+            viewer_id = request.app.state.account_by_token(token.strip()).id
+        except InvalidCredentialsError as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+    likes, dislikes, mine = request.app.state.reactions_for(video_id, viewer_id)
+    return ReactionsOut(likes=likes, dislikes=dislikes, mine=mine)
 
 
 @router.post("/videos/{video_id}/view", response_model=ViewOut)

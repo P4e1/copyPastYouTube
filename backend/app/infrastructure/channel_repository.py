@@ -49,6 +49,17 @@ class SqlChannelRepository:
             or 0
         )
 
+    def subscribed_channels(self, subscriber_id: str) -> list[ChannelRecord]:
+        rows = self._session.scalars(
+            select(ChannelRow)
+            .join(SubscriptionRow, SubscriptionRow.channel_id == ChannelRow.id)
+            .where(SubscriptionRow.subscriber_id == subscriber_id)
+            .order_by(ChannelRow.name.asc())
+        )
+        return [
+            ChannelRecord(id=row.id, owner_id=row.owner_id, name=row.name, description=row.description) for row in rows
+        ]
+
     def videos(self, channel_id: str) -> list[VideoOnChannel]:
         rows = self._session.scalars(select(VideoRow).where(VideoRow.channel_id == channel_id))
         return [self._video(row) for row in rows]

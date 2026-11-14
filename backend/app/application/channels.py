@@ -23,6 +23,7 @@ class ChannelCard:
     name: str
     description: str
     subscriber_count: int
+    subscribed: bool
     videos: list[ChannelVideo]
 
 
@@ -76,6 +77,9 @@ class ChannelRepository:
         raise NotImplementedError
 
     def subscriber_count(self, channel_id: str) -> int:
+        raise NotImplementedError
+
+    def subscribed_channels(self, subscriber_id: str) -> list[ChannelRecord]:
         raise NotImplementedError
 
     def videos(self, channel_id: str) -> list[VideoOnChannel]:
@@ -133,8 +137,13 @@ def open_channel(channels: ChannelRepository, channel_id: str, viewer_id: str | 
         name=channel.name,
         description=channel.description,
         subscriber_count=channels.subscriber_count(channel_id),
+        subscribed=bool(viewer_id) and channels.subscription_exists(viewer_id, channel_id),
         videos=videos,
     )
+
+
+def list_subscriptions(channels: ChannelRepository, subscriber_id: str) -> list[ChannelRecord]:
+    return channels.subscribed_channels(subscriber_id)
 
 
 def subscribe(channels: ChannelRepository, channel_id: str, subscriber_id: str) -> None:

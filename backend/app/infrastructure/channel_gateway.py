@@ -11,6 +11,7 @@ from app.application.channels import (
     PlaylistCard,
     add_playlist_item,
     create_playlist,
+    list_subscriptions,
     open_channel,
     playlists_of,
     rename_channel,
@@ -34,6 +35,11 @@ def _session_scope() -> Iterator[Session]:
         raise
     finally:
         session.close()
+
+
+def subscriptions_of(subscriber_id: str) -> list[ChannelRecord]:
+    with _session_scope() as session:
+        return list_subscriptions(SqlChannelRepository(session), subscriber_id)
 
 
 def channel_card(channel_id: str, viewer_id: str | None) -> ChannelCard:

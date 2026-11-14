@@ -15,6 +15,7 @@ class Comment:
     user_id: str
     parent_id: str | None
     body: str
+    username: str = ""
 
 
 class EngagementRepository:
@@ -36,6 +37,12 @@ class EngagementRepository:
         raise NotImplementedError
 
     def list_comments(self, video_id: str) -> list[Comment]:
+        raise NotImplementedError
+
+    def count_reactions(self, video_id: str) -> tuple[int, int]:
+        raise NotImplementedError
+
+    def reaction_of(self, user_id: str, video_id: str) -> int:
         raise NotImplementedError
 
     def get_comment(self, comment_id: str) -> Comment | None:
@@ -63,6 +70,12 @@ def _require_ready(videos, video_id: str, viewer_id: str):
 def record_view(videos, engagement: EngagementRepository, video_id: str, viewer_id: str) -> int:
     _require_ready(videos, video_id, viewer_id)
     return engagement.increment_view(video_id)
+
+
+def reaction_counts(engagement: EngagementRepository, video_id: str, viewer_id: str | None) -> tuple[int, int, int]:
+    likes, dislikes = engagement.count_reactions(video_id)
+    mine = engagement.reaction_of(viewer_id, video_id) if viewer_id else 0
+    return likes, dislikes, mine
 
 
 def set_like(videos, engagement: EngagementRepository, video_id: str, user_id: str, value: int) -> int:

@@ -6,8 +6,8 @@ create_app собирает FastAPI, проверку PostgreSQL, Swagger /docs 
 Подключённые маршруты:
 - auth: /auth/register, /auth/login, /auth/me
 - videos: POST /videos, GET /videos/{id}, GET /feed, GET /search
-- engagement: POST /videos/{id}/view, POST /videos/{id}/like, GET и POST /videos/{id}/comments, DELETE /videos/{id}/comments/{comment_id}
-- channels: GET /channels/{id}, PATCH /channels/{id}, POST и DELETE /channels/{id}/subscribe
+- engagement: POST /videos/{id}/view, POST /videos/{id}/like, GET /videos/{id}/reactions, GET и POST /videos/{id}/comments, DELETE /videos/{id}/comments/{comment_id}
+- channels: GET /channels/{id}, PATCH /channels/{id}, POST и DELETE /channels/{id}/subscribe, GET /subscriptions
 - playlists: GET и POST /playlists, POST /playlists/{id}/items
 - moderation: POST /reports, GET /moderation/reports, POST /moderation/videos/{id}/hide, POST /moderation/videos/{id}/restore
 - admin: PATCH /admin/users/{id}/role
@@ -24,22 +24,25 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.infrastructure.auth_gateway import account_by_token, login_account, register_account
 from app.infrastructure.db import check_database, init_engine
-from app.infrastructure.engagement_gateway import (
-    comments_for_video,
-    delete_own_comment,
-    publish_comment,
-    register_like,
-    register_view,
-)
 from app.infrastructure.channel_gateway import (
     channel_card,
     channel_playlists,
     open_playlist,
     place_playlist_item,
     subscribe_channel,
+    subscriptions_of,
     unsubscribe_channel,
     update_channel_name,
 )
+from app.infrastructure.engagement_gateway import (
+    comments_for_video,
+    delete_own_comment,
+    publish_comment,
+    reactions_for,
+    register_like,
+    register_view,
+)
+from app.infrastructure.media_gateway import complete_for_owner, playback_for_viewer
 from app.infrastructure.moderation_gateway import (
     change_user_role,
     file_report,
@@ -47,7 +50,6 @@ from app.infrastructure.moderation_gateway import (
     queue_reports,
     restore_hidden_video,
 )
-from app.infrastructure.media_gateway import complete_for_owner, playback_for_viewer
 from app.infrastructure.storage_factory import build_storage
 from app.infrastructure.video_gateway import bind_create_video, feed_cards, search_cards, video_card
 from app.presentation.auth import router as auth_router
@@ -85,16 +87,18 @@ def create_app() -> FastAPI:
     app.state.login_account = login_account
     app.state.account_by_token = account_by_token
     app.state.create_video = bind_create_video(storage)
-    app.state.get_video = video_card
-    app.state.list_feed = feed_cards
-    app.state.search_videos = search_cards
+    app.state.get_video = lambda video_id, viewer_id: video_card(video_id, viewer_id, storage)
+    app.state.list_feed = lambda: feed_cards(storage)
+    app.state.search_videos = lambda query: search_cards(query, storage)
     app.state.complete_upload = lambda video_id, owner_id: complete_for_owner(storage, video_id, owner_id)
     app.state.playback_url = lambda video_id, viewer_id: playback_for_viewer(storage, video_id, viewer_id)
+    app.state.reactions_for = reactions_for
     app.state.register_view = register_view
     app.state.register_like = register_like
     app.state.publish_comment = publish_comment
     app.state.comments_for_video = comments_for_video
     app.state.delete_own_comment = delete_own_comment
+    app.state.subscriptions_of = subscriptions_of
     app.state.channel_card = channel_card
     app.state.update_channel_name = update_channel_name
     app.state.subscribe_channel = subscribe_channel

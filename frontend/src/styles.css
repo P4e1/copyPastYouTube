@@ -366,6 +366,282 @@ svg {
   color: #065fd4;
 }
 
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 40px 16px;
+  align-items: start;
+}
+
+.video-card {
+  display: block;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #e5e5e5;
+}
+
+.thumb img,
+.thumb__empty {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.thumb__time {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.video-card__body {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.channel-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #065fd4;
+  color: #fff;
+  font-weight: 500;
+  text-decoration: none;
+  flex: none;
+}
+
+.video-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.video-card__meta,
+.watch__subs,
+.search-row__desc {
+  margin: 4px 0 0;
+  color: #606060;
+  font-size: 14px;
+}
+
+.watch {
+  max-width: 1100px;
+}
+
+.player {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 12px;
+}
+
+.watch__title {
+  margin: 12px 0 0;
+  font-size: 20px;
+}
+
+.watch__row,
+.watch__channel,
+.watch__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.watch__row {
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.action,
+.text-button {
+  border: 0;
+  background: #f2f2f2;
+  border-radius: 18px;
+  height: 36px;
+  padding: 0 12px;
+}
+
+.action--on {
+  background: #0f0f0f;
+  color: #fff;
+}
+
+.watch__channel {
+  margin-top: 16px;
+}
+
+.watch__channel-name {
+  color: inherit;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.subscribe {
+  margin-left: auto;
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 18px;
+  background: #0f0f0f;
+  color: #fff;
+  font-weight: 500;
+}
+
+.subscribe--on {
+  background: #f2f2f2;
+  color: #0f0f0f;
+}
+
+.description {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f2f2f2;
+}
+
+.description p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.description:not(.description--open) p {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.description button,
+.text-button {
+  margin-top: 8px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-weight: 500;
+}
+
+.comments {
+  margin-top: 24px;
+}
+
+.comment-form,
+.comment {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.comment-form {
+  margin: 16px 0;
+}
+
+.comment-form input {
+  flex: 1;
+  height: 36px;
+  border: 0;
+  border-bottom: 1px solid #d3d3d3;
+  background: transparent;
+}
+
+.comment-form button {
+  height: 36px;
+  border: 0;
+  border-radius: 18px;
+  padding: 0 16px;
+  background: #065fd4;
+  color: #fff;
+}
+
+.comment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.comment-list li {
+  margin-top: 16px;
+}
+
+.comment-list--reply {
+  margin-left: 48px;
+}
+
+.comment p {
+  margin: 4px 0 0;
+}
+
+.search-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: minmax(160px, 360px) minmax(0, 1fr);
+  gap: 16px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.search-row h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.thumb--row {
+  width: 100%;
+}
+
+.sub-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.sub-list a {
+  color: inherit;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+.channel-plain h1 {
+  margin: 0 0 8px;
+}
+
+.unavailable {
+  padding: 48px 0;
+  text-align: center;
+}
+
 @media (max-width: 791px) {
   .sidebar {
     position: fixed;
@@ -388,6 +664,14 @@ svg {
 
   .search__button {
     width: 48px;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .search-row {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .topbar {

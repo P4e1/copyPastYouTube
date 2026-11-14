@@ -98,7 +98,16 @@ class SqlVideoRepository:
             status=row.status,
             object_key=row.object_key,
             grant_user_ids=frozenset(grants),
+            view_count=row.view_count,
+            duration_sec=row.duration_sec,
+            created_at=row.created_at.isoformat(),
+            channel_name=self._channel_name(row.channel_id),
+            thumbnail_key=row.thumbnail_key,
         )
+
+    def _channel_name(self, channel_id: str) -> str:
+        name = self._session.scalar(select(ChannelRow.name).where(ChannelRow.id == channel_id))
+        return name or ""
 
     def _owner_id(self, channel_id: str) -> str:
         owner_id = self._session.scalar(select(ChannelRow.owner_id).where(ChannelRow.id == channel_id))

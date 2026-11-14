@@ -2,6 +2,7 @@
 
 from collections.abc import Iterator
 from contextlib import contextmanager
+from dataclasses import replace
 
 from sqlalchemy.orm import Session
 
@@ -51,16 +52,22 @@ def bind_create_video(storage: ObjectStorage):
     return create_video_for_channel
 
 
-def video_card(video_id: str, viewer_id: str | None) -> VideoCard:
+def _with_thumbnail(card: VideoCard, storage: ObjectStorage | None) -> VideoCard:
+    if storage is None or not card.thumbnail_key:
+        return card
+    return replace(card, thumbnail_url=storage.presign_download(card.thumbnail_key))
+
+
+def video_card(video_id: str, viewer_id: str | None, storage: ObjectStorage | None = None) -> VideoCard:
     with _session_scope() as session:
-        return open_video(SqlVideoRepository(session), video_id, viewer_id)
+        return _with_thumbnail(open_video(SqlVideoRepository(session), video_id, viewer_id), storage)
 
 
-def feed_cards() -> list[VideoCard]:
+def feed_cards(storage: ObjectStorage | None = None) -> list[VideoCard]:
     with _session_scope() as session:
-        return list_feed(SqlVideoRepository(session))
+        return [_with_thumbnail(card, storage) for card in list_feed(SqlVideoRepository(session))]
 
 
-def search_cards(query: str) -> list[VideoCard]:
+def search_cards(query: str, storage: ObjectStorage | None = None) -> list[VideoCard]:
     with _session_scope() as session:
-        return search_videos(SqlVideoRepository(session), query)
+        return [_with_thumbnail(card, storage) for card in search_videos(SqlVideoRepository(session), query)]

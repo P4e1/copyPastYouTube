@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
 
 import { useSession } from "../session";
 
@@ -24,6 +24,8 @@ const PATHS = {
 
 export function AppShell() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [query, setQuery] = useState(params.get("q") || "");
   const { token, account, logout } = useSession();
   const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches);
   const [open, setOpen] = useState(() => !window.matchMedia(NARROW).matches);
@@ -39,6 +41,10 @@ export function AppShell() {
     query.addEventListener("change", onChange);
     return () => query.removeEventListener("change", onChange);
   }, []);
+
+  useEffect(() => {
+    setQuery(params.get("q") || "");
+  }, [params]);
 
   function closeIfNarrow() {
     if (narrow) {
@@ -78,8 +84,22 @@ export function AppShell() {
           </Link>
         </div>
         <div className="topbar__center">
-          <form className="search" role="search" onSubmit={(event) => event.preventDefault()}>
-            <input className="search__input" type="search" aria-label="Поиск" placeholder="Поиск" />
+          <form
+            className="search"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+            }}
+          >
+            <input
+              className="search__input"
+              type="search"
+              aria-label="Поиск"
+              placeholder="Поиск"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
             <button className="search__button" type="submit" aria-label="Искать">
               <Glyph d={PATHS.search} />
             </button>

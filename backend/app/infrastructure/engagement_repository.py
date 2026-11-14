@@ -2,10 +2,11 @@
 
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.application.engagement import Comment
+from app.infrastructure.auth_models import UserRow
 from app.infrastructure.engagement_models import CommentRow, LikeRow
 from app.infrastructure.video_models import VideoRow
 
@@ -30,6 +31,19 @@ class SqlEngagementRepository:
             row.value = value
         self._session.flush()
         return value
+
+    def count_reactions(self, video_id: str) -> tuple[int, int]:
+        likes = self._session.scalar(
+            select(func.count()).select_from(LikeRow).where(LikeRow.video_id == video_id, LikeRow.value == 1)
+        )
+        dislikes = self._session.scalar(
+            select(func.count()).select_from(LikeRow).where(LikeRow.video_id == video_id, LikeRow.value == -1)
+        )
+        return int(likes or 0), int(dislikes or 0)
+
+    def reaction_of(self, user_id: str, video_id: str) -> int:
+        row = self._session.get(LikeRow, {"user_id": user_id, "video_id": video_id})
+        return row.value if row is not None else 0
 
     def add_comment(
         self,
@@ -58,6 +72,7 @@ class SqlEngagementRepository:
             user_id=user_id,
             parent_id=parent_id,
             body=body,
+            username=self._username(user_id),
         )
 
     def list_comments(self, video_id: str) -> list[Comment]:
@@ -73,6 +88,7 @@ class SqlEngagementRepository:
                 user_id=row.user_id,
                 parent_id=row.parent_id,
                 body=row.body,
+                username=self._username(row.user_id),
             )
             for row in rows
         ]
@@ -87,7 +103,12 @@ class SqlEngagementRepository:
             user_id=row.user_id,
             parent_id=row.parent_id,
             body=row.body,
+            username=self._username(row.user_id),
         )
+
+    def _username(self, user_id: str) -> str:
+        name = self._session.scalar(select(UserRow.username).where(UserRow.id == user_id))
+        return name or ""
 
     def delete_comment(self, comment_id: str) -> None:
         row = self._session.get(CommentRow, comment_id)

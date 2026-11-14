@@ -22,7 +22,17 @@ class ChannelOut(BaseModel):
     name: str
     description: str
     subscriber_count: int
+    subscribed: bool = False
     videos: list[ChannelVideoOut]
+
+
+class SubscriptionOut(BaseModel):
+    id: str
+    name: str
+
+
+class SubscriptionListOut(BaseModel):
+    items: list[SubscriptionOut]
 
 
 class RenameIn(BaseModel):
@@ -87,6 +97,13 @@ def _playlist_out(card) -> PlaylistOut:
     )
 
 
+@router.get("/subscriptions", response_model=SubscriptionListOut)
+def subscriptions(request: Request) -> SubscriptionListOut:
+    account = _account(request)
+    rows = request.app.state.subscriptions_of(account.id)
+    return SubscriptionListOut(items=[SubscriptionOut(id=row.id, name=row.name) for row in rows])
+
+
 @router.get("/channels/{channel_id}", response_model=ChannelOut)
 def get_channel(channel_id: str, request: Request) -> ChannelOut:
     card = request.app.state.channel_card(channel_id, _optional_viewer(request))
@@ -95,6 +112,7 @@ def get_channel(channel_id: str, request: Request) -> ChannelOut:
         name=card.name,
         description=card.description,
         subscriber_count=card.subscriber_count,
+        subscribed=card.subscribed,
         videos=[
             ChannelVideoOut(
                 id=video.id,
