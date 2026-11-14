@@ -633,8 +633,132 @@ svg {
   text-decoration: none;
 }
 
-.channel-plain h1 {
+.channel-banner {
+  height: 180px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #065fd4, #cc0000);
+}
+
+.channel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.channel-avatar--large {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+
+.channel-identity {
+  flex: 1;
+  min-width: 180px;
+}
+
+.channel-identity h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.channel-identity p {
+  margin: 4px 0 0;
+  color: #606060;
+}
+
+.channel-head .subscribe {
+  margin-left: auto;
+  background: #cc0000;
+  color: #fff;
+  text-decoration: none;
+}
+
+.channel-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.channel-tab {
+  height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-weight: 500;
+}
+
+.channel-tab--on {
+  border-bottom-color: #0f0f0f;
+}
+
+.thumb__hidden {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #cc0000;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.playlist-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+
+.playlist h2 {
   margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.playlist ol {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.playlist a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.playlist-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.playlist-form input,
+.playlist-form select {
+  height: 36px;
+  border: 1px solid #d3d3d3;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #fff;
+}
+
+.playlist-form button {
+  height: 36px;
+  border: 0;
+  border-radius: 18px;
+  padding: 0 16px;
+  background: #0f0f0f;
+  color: #fff;
+}
+
+.channel-empty {
+  color: #606060;
 }
 
 .unavailable {
@@ -672,6 +796,18 @@ svg {
 
   .search-row {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .channel-banner {
+    height: 96px;
+  }
+
+  .channel-head {
+    align-items: flex-start;
+  }
+
+  .channel-head .subscribe {
+    margin-left: 0;
   }
 
   .topbar {
