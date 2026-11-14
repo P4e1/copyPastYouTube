@@ -6,6 +6,6 @@ psycopg[binary]
 pydantic
 boto3
 python-jose
-pwdlib
+pwdlib[argon2]
 pytest
 httpx

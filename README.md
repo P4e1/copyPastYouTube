@@ -66,4 +66,4 @@ flowchart TB
 pytest backend/tests
 ```
 
-Каркас бэкенда уже отвечает на `GET /health` и открывает `/docs`. Команда тестовой базы и `pytest backend/tests` записаны в [backend/README.md](backend/README.md).
+Каркас бэкенда отвечает на `GET /health` и открывает `/docs`. Регистрация, вход и `/auth/me` уже работают: пароль хранится как хеш, роль при регистрации — `user`. Команда тестовой базы и `pytest backend/tests` записаны в [backend/README.md](backend/README.md).
