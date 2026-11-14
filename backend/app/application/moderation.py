@@ -15,6 +15,8 @@ class Report:
     video_id: str
     reason: str
     status: str
+    reporter_username: str = ""
+    video_title: str = ""
 
 
 class ModerationRepository:

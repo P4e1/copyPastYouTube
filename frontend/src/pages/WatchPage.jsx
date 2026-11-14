@@ -17,6 +17,9 @@ export function WatchPage() {
   const [draft, setDraft] = useState("");
   const [replyTo, setReplyTo] = useState(null);
   const [open, setOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportSent, setReportSent] = useState(false);
+  const [reportError, setReportError] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -88,6 +91,22 @@ export function WatchPage() {
     }
     const next = await api(`/channels/${channel.id}`);
     setChannel(next);
+  }
+
+  async function sendReport(event) {
+    event.preventDefault();
+    const reason = reportReason.trim();
+    if (!reason || !token) {
+      return;
+    }
+    setReportError("");
+    try {
+      await api("/reports", { method: "POST", body: { video_id: videoId, reason } });
+      setReportReason("");
+      setReportSent(true);
+    } catch (exc) {
+      setReportError(exc.message);
+    }
   }
 
   async function sendComment(event) {
@@ -162,6 +181,21 @@ export function WatchPage() {
           </button>
         ) : null}
       </div>
+      {token ? (
+        <form className="report-form" onSubmit={sendReport}>
+          <label>
+            Пожаловаться
+            <textarea
+              value={reportReason}
+              maxLength={2000}
+              onChange={(event) => setReportReason(event.target.value)}
+            />
+          </label>
+          <button type="submit">Отправить жалобу</button>
+          {reportSent ? <p>Жалоба отправлена</p> : null}
+          {reportError ? <p className="report-form__error">{reportError}</p> : null}
+        </form>
+      ) : null}
       <section className="comments">
         <h2>Комментарии</h2>
         {token ? (

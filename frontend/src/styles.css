@@ -827,9 +827,75 @@ svg {
   padding: 0;
 }
 
-.unavailable {
+.unavailable,
+.refusal {
   padding: 48px 0;
   text-align: center;
+}
+
+.moderation {
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.moderation h1,
+.report-row p,
+.report-form p {
+  margin: 0;
+}
+
+.report-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.report-row,
+.report-form {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.report-row {
+  padding: 16px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+}
+
+.report-form textarea,
+.report-row {
+  max-width: 100%;
+}
+
+.report-form textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+}
+
+.report-row button,
+.report-form button {
+  justify-self: start;
+  height: 36px;
+  border: 0;
+  border-radius: 18px;
+  padding: 0 16px;
+  background: #0f0f0f;
+  color: #fff;
+}
+
+.moderation__error,
+.report-form__error {
+  color: #cc0000;
 }
 
 @media (max-width: 791px) {

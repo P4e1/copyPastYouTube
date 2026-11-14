@@ -19,6 +19,8 @@ class ReportOut(BaseModel):
     video_id: str
     reason: str
     status: str
+    reporter_username: str = ""
+    video_title: str = ""
 
 
 class ReportListOut(BaseModel):
@@ -52,6 +54,8 @@ def _report_out(report) -> ReportOut:
         video_id=report.video_id,
         reason=report.reason,
         status=report.status,
+        reporter_username=report.reporter_username,
+        video_title=report.video_title,
     )
 
 

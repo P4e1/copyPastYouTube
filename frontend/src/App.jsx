@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/AppShell";
 import { ChannelPage } from "./pages/ChannelPage";
 import { HomePage } from "./pages/HomePage";
+import { ModerationPage } from "./pages/ModerationPage";
 import { LoginPage } from "./pages/LoginPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -25,6 +26,7 @@ export function App() {
         <Route path="/shorts" element={<PlaceholderPage text="Смотреть пока нечего" />} />
         <Route path="/subscriptions" element={<SubscriptionsPage />} />
         <Route path="/history" element={<PlaceholderPage text="Смотреть пока нечего" />} />
+        <Route path="/moderation" element={<ModerationPage />} />
         <Route path="/channel/:channelId" element={<ChannelPage />} />
         <Route path="/you" element={<YouGate />} />
       </Route>

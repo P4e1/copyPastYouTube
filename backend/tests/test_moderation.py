@@ -18,6 +18,7 @@ def _auth(client, prefix: str = "mod") -> dict:
     assert login.status_code == 200
     return {
         "user_id": registered.json()["id"],
+        "username": payload["username"],
         "headers": {"Authorization": f"Bearer {login.json()['access_token']}"},
     }
 
@@ -62,8 +63,11 @@ def test_user_report_is_visible_to_moderator(client):
 
     listed = client.get("/moderation/reports", headers=moderator["headers"])
     assert listed.status_code == 200
-    assert video_id in {item["video_id"] for item in listed.json()["items"]}
-    assert any(item["status"] == "open" and item["reason"] == "спам" for item in listed.json()["items"])
+    item = next(row for row in listed.json()["items"] if row["video_id"] == video_id)
+    assert item["status"] == "open"
+    assert item["reason"] == "спам"
+    assert item["video_title"] == "На проверке"
+    assert item["reporter_username"] == reporter["username"]
 
 
 def test_hide_removes_video_from_feed_and_marks_owner_card(client):

@@ -38,18 +38,24 @@ class SqlModerationRepository:
         )
 
     def list_open(self) -> list[Report]:
-        rows = self._session.scalars(
-            select(ReportRow).where(ReportRow.status == ReportStatus.open.value).order_by(ReportRow.created_at.asc())
+        rows = self._session.execute(
+            select(ReportRow, UserRow.username, VideoRow.title)
+            .join(UserRow, UserRow.id == ReportRow.reporter_id)
+            .join(VideoRow, VideoRow.id == ReportRow.video_id)
+            .where(ReportRow.status == ReportStatus.open.value)
+            .order_by(ReportRow.created_at.asc())
         )
         return [
             Report(
-                id=row.id,
-                reporter_id=row.reporter_id,
-                video_id=row.video_id,
-                reason=row.reason,
-                status=row.status,
+                id=report.id,
+                reporter_id=report.reporter_id,
+                video_id=report.video_id,
+                reason=report.reason,
+                status=report.status,
+                reporter_username=username,
+                video_title=title,
             )
-            for row in rows
+            for report, username, title in rows
         ]
 
     def resolve_open(self, video_id: str, resolved_by: str) -> None:
