@@ -45,6 +45,9 @@ class UserRepository(Protocol):
     def get_by_id(self, user_id: str) -> StoredUser | None:
         """Найти пользователя по идентификатору вместе с его каналом."""
 
+    def search(self, query: str) -> list[StoredUser]:
+        """Найти пользователей по части имени, без пароля в ответе сценария."""
+
     def add_user_with_channel(
         self,
         *,

@@ -82,6 +82,15 @@ def _out(card, upload_url: str | None = None) -> VideoOut:
     )
 
 
+class UpdateVideoIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=200)
+    description: str = ""
+    visibility: Visibility
+    grant_user_ids: list[str] = Field(default_factory=list)
+
+
 @router.post("/videos", status_code=201, response_model=VideoOut)
 def create_video(body: CreateVideoIn, request: Request) -> VideoOut:
     account = _required_account(request)
@@ -94,6 +103,20 @@ def create_video(body: CreateVideoIn, request: Request) -> VideoOut:
         grant_user_ids=body.grant_user_ids,
     )
     return _out(card, upload_url)
+
+
+@router.patch("/videos/{video_id}", response_model=VideoOut)
+def update_video(video_id: str, body: UpdateVideoIn, request: Request) -> VideoOut:
+    account = _required_account(request)
+    card = request.app.state.revise_video(
+        video_id,
+        account.id,
+        title=body.title,
+        description=body.description,
+        visibility=body.visibility.value,
+        grant_user_ids=body.grant_user_ids,
+    )
+    return _out(card)
 
 
 @router.get("/videos/{video_id}", response_model=VideoOut)

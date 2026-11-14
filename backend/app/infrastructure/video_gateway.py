@@ -6,9 +6,10 @@ from dataclasses import replace
 
 from sqlalchemy.orm import Session
 
-from app.application.videos import VideoCard, create_video, list_feed, open_video, search_videos
+from app.application.videos import VideoCard, create_video, list_feed, open_video, revise_upload, search_videos
 from app.domain.storage import ObjectStorage
 from app.infrastructure import db
+from app.infrastructure.user_repository import SqlUserRepository
 from app.infrastructure.video_repository import SqlVideoRepository
 
 
@@ -50,6 +51,29 @@ def bind_create_video(storage: ObjectStorage):
             )
 
     return create_video_for_channel
+
+
+def revise_for_owner(
+    video_id: str,
+    actor_id: str,
+    *,
+    title: str,
+    description: str,
+    visibility: str,
+    grant_user_ids: list[str],
+) -> VideoCard:
+    with _session_scope() as session:
+        users = SqlUserRepository(session)
+        return revise_upload(
+            SqlVideoRepository(session),
+            lambda user_id: users.get_by_id(user_id) is not None,
+            video_id,
+            actor_id,
+            title=title,
+            description=description,
+            visibility=visibility,
+            grant_user_ids=grant_user_ids,
+        )
 
 
 def _with_thumbnail(card: VideoCard, storage: ObjectStorage | None) -> VideoCard:

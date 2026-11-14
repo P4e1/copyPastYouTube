@@ -22,7 +22,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.infrastructure.auth_gateway import account_by_token, login_account, register_account
+from app.infrastructure.auth_gateway import account_by_token, login_account, people_matching, register_account
 from app.infrastructure.db import check_database, init_engine
 from app.infrastructure.channel_gateway import (
     channel_card,
@@ -51,7 +51,14 @@ from app.infrastructure.moderation_gateway import (
     restore_hidden_video,
 )
 from app.infrastructure.storage_factory import build_storage
-from app.infrastructure.video_gateway import bind_create_video, feed_cards, search_cards, video_card
+from app.infrastructure.video_gateway import (
+    bind_create_video,
+    feed_cards,
+    revise_for_owner,
+    search_cards,
+    video_card,
+)
+from app.presentation.auth import people_router
 from app.presentation.auth import router as auth_router
 from app.presentation.channels import router as channel_router
 from app.presentation.engagement import router as engagement_router
@@ -86,6 +93,8 @@ def create_app() -> FastAPI:
     app.state.register_account = register_account
     app.state.login_account = login_account
     app.state.account_by_token = account_by_token
+    app.state.search_users = people_matching
+    app.state.revise_video = revise_for_owner
     app.state.create_video = bind_create_video(storage)
     app.state.get_video = lambda video_id, viewer_id: video_card(video_id, viewer_id, storage)
     app.state.list_feed = lambda: feed_cards(storage)
@@ -114,6 +123,7 @@ def create_app() -> FastAPI:
     register_exception_handlers(app)
     app.include_router(health_router)
     app.include_router(auth_router)
+    app.include_router(people_router)
     app.include_router(video_router)
     app.include_router(engagement_router)
     app.include_router(channel_router)

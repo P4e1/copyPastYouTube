@@ -128,3 +128,67 @@ def test_private_card_is_not_found_for_stranger(client):
     allowed = client.get(f"/videos/{video_id}", headers=grantee["headers"])
     assert allowed.status_code == 200
     assert allowed.json()["id"] == video_id
+
+
+def test_owner_revises_uploading_video_and_stranger_is_forbidden(client):
+    owner = _auth(client)
+    grantee = _auth(client)
+    stranger = _auth(client)
+    created = _create(client, owner["headers"], title="Черновик", description="")
+    video_id = created.json()["id"]
+
+    updated = client.patch(
+        f"/videos/{video_id}",
+        json={
+            "title": "Закрытый клип",
+            "description": "только своим",
+            "visibility": "private",
+            "grant_user_ids": [grantee["user_id"]],
+        },
+        headers=owner["headers"],
+    )
+    assert updated.status_code == 200
+    body = updated.json()
+    assert body["title"] == "Закрытый клип"
+    assert body["visibility"] == "private"
+
+    denied = client.patch(
+        f"/videos/{video_id}",
+        json={"title": "Чужое", "description": "", "visibility": "public", "grant_user_ids": []},
+        headers=stranger["headers"],
+    )
+    assert denied.status_code == 403
+
+    missing_user = client.patch(
+        f"/videos/{video_id}",
+        json={
+            "title": "Закрытый клип",
+            "description": "",
+            "visibility": "private",
+            "grant_user_ids": ["00000000-0000-0000-0000-000000000000"],
+        },
+        headers=owner["headers"],
+    )
+    assert missing_user.status_code == 422
+
+    _set_status(video_id, "ready")
+    assert client.get(f"/videos/{video_id}", headers=grantee["headers"]).status_code == 200
+    assert client.get(f"/videos/{video_id}", headers=stranger["headers"]).status_code == 404
+    assert client.get("/feed").json()["items"]
+    assert video_id not in {item["id"] for item in client.get("/feed").json()["items"]}
+
+
+def test_user_search_returns_username_without_email(client):
+    owner = _auth(client)
+    mark = uuid.uuid4().hex[:8]
+    named = {
+        "email": f"find-{mark}@example.com",
+        "username": f"find{mark}",
+        "password": "secret-pass",
+    }
+    assert client.post("/auth/register", json=named).status_code == 201
+    found = client.get(f"/users?q=find{mark}", headers=owner["headers"])
+    assert found.status_code == 200
+    assert found.json()["items"] == [{"id": found.json()["items"][0]["id"], "username": named["username"]}]
+    assert "email" not in found.json()["items"][0]
+    assert client.get("/users?q=find", headers=None).status_code == 401

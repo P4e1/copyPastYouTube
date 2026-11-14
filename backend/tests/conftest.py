@@ -65,4 +65,7 @@ def client(app):
         def post(self, path, json=None, headers=None):
             return self.request("POST", path, json=json, headers=headers)
 
+        def patch(self, path, json=None, headers=None):
+            return self.request("PATCH", path, json=json, headers=headers)
+
     return SyncClient()

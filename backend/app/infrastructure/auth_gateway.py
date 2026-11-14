@@ -5,7 +5,7 @@ from contextlib import contextmanager
 
 from sqlalchemy.orm import Session
 
-from app.application.auth import account_by_id, authenticate, register_user
+from app.application.auth import account_by_id, authenticate, find_people, register_user
 from app.domain.auth import Account
 from app.infrastructure import db
 from app.infrastructure.passwords import PwdlibHasher
@@ -45,3 +45,8 @@ def account_by_token(token: str) -> Account:
     user_id = read_user_id(token)
     with _session_scope() as session:
         return account_by_id(SqlUserRepository(session), user_id)
+
+
+def people_matching(query: str) -> list[Account]:
+    with _session_scope() as session:
+        return find_people(SqlUserRepository(session), query)

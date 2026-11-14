@@ -8,6 +8,7 @@ import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SearchPage } from "./pages/SearchPage";
 import { SubscriptionsPage } from "./pages/SubscriptionsPage";
+import { UploadPage } from "./pages/UploadPage";
 import { WatchPage } from "./pages/WatchPage";
 import { useSession } from "./session";
 
@@ -18,6 +19,7 @@ export function App() {
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<AppShell />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/upload" element={<UploadPage />} />
         <Route path="/watch/:videoId" element={<WatchPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/shorts" element={<PlaceholderPage text="Смотреть пока нечего" />} />

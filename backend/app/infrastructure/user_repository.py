@@ -20,6 +20,13 @@ class SqlUserRepository:
             return None
         return self._to_stored(row)
 
+    def search(self, query: str) -> list[StoredUser]:
+        pattern = f"%{query.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')}%"
+        rows = self._session.scalars(
+            select(UserRow).where(UserRow.username.ilike(pattern, escape="\\")).order_by(UserRow.username).limit(8)
+        )
+        return [self._to_stored(row) for row in rows]
+
     def get_by_id(self, user_id: str) -> StoredUser | None:
         row = self._session.get(UserRow, user_id)
         if row is None:

@@ -3,7 +3,7 @@
 import uuid
 from dataclasses import dataclass
 
-from app.domain.errors import NotFoundError
+from app.domain.errors import ForbiddenError, NotFoundError, UploadRejected
 from app.domain.storage import ObjectStorage
 from app.domain.videos import VideoSnapshot, VideoStatus, View, Visibility, in_feed, view_access
 
@@ -60,6 +60,17 @@ class VideoRepository:
         raise NotImplementedError
 
     def get(self, video_id: str) -> StoredVideo | None:
+        raise NotImplementedError
+
+    def revise(
+        self,
+        video_id: str,
+        *,
+        title: str,
+        description: str,
+        visibility: str,
+        grant_user_ids: list[str],
+    ) -> StoredVideo:
         raise NotImplementedError
 
     def feed(self) -> list[StoredVideo]:
@@ -121,6 +132,37 @@ def create_video(
         grant_user_ids=grants,
     )
     return _card(stored, hidden_mark=False), upload_url
+
+
+def revise_upload(
+    videos: VideoRepository,
+    user_exists,
+    video_id: str,
+    actor_id: str,
+    *,
+    title: str,
+    description: str,
+    visibility: str,
+    grant_user_ids: list[str],
+) -> VideoCard:
+    stored = videos.get(video_id)
+    if stored is None:
+        raise NotFoundError("Не найдено")
+    if stored.owner_id != actor_id:
+        raise ForbiddenError("Нельзя менять чужой ролик")
+    if stored.status != VideoStatus.uploading.value:
+        raise ForbiddenError("Ролик уже отправлен")
+    grants = list(dict.fromkeys(grant_user_ids)) if visibility == Visibility.private.value else []
+    if any(not user_exists(user_id) for user_id in grants):
+        raise UploadRejected("Пользователь не найден")
+    revised = videos.revise(
+        video_id,
+        title=title,
+        description=description,
+        visibility=visibility,
+        grant_user_ids=grants,
+    )
+    return _card(revised, hidden_mark=False)
 
 
 def open_video(videos: VideoRepository, video_id: str, viewer_id: str | None) -> VideoCard:

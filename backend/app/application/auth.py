@@ -56,6 +56,13 @@ def authenticate(
     return _account(stored)
 
 
+def find_people(users: UserRepository, query: str) -> list[Account]:
+    text = query.strip()
+    if not text:
+        return []
+    return [_account(user) for user in users.search(text)]
+
+
 def account_by_id(users: UserRepository, user_id: str) -> Account:
     stored = users.get_by_id(user_id)
     if stored is None:

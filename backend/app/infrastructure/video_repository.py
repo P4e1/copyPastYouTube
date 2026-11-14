@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from app.application.videos import StoredVideo
@@ -58,6 +58,27 @@ class SqlVideoRepository:
             object_key=object_key,
             grant_user_ids=frozenset(grant_user_ids),
         )
+
+    def revise(
+        self,
+        video_id: str,
+        *,
+        title: str,
+        description: str,
+        visibility: str,
+        grant_user_ids: list[str],
+    ) -> StoredVideo:
+        row = self._session.get(VideoRow, video_id)
+        if row is None:
+            raise RuntimeError("Ролик для правки не найден")
+        row.title = title
+        row.description = description
+        row.visibility = visibility
+        self._session.execute(delete(VideoGrantRow).where(VideoGrantRow.video_id == video_id))
+        for user_id in grant_user_ids:
+            self._session.add(VideoGrantRow(video_id=video_id, user_id=user_id))
+        self._session.flush()
+        return self._to_stored(row)
 
     def get(self, video_id: str) -> StoredVideo | None:
         row = self._session.get(VideoRow, video_id)

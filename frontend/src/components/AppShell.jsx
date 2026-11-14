@@ -53,9 +53,7 @@ export function AppShell() {
   }
 
   function onCreate() {
-    if (!token) {
-      navigate("/login");
-    }
+    navigate(token ? "/upload" : "/login");
   }
 
   function onLogout() {

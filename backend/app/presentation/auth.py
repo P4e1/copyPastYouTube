@@ -83,3 +83,28 @@ def me(request: Request) -> AccountOut:
 
 def _http_error(status_code: int, detail: str) -> HTTPException:
     return HTTPException(status_code=status_code, detail=detail)
+
+
+people_router = APIRouter()
+
+
+class PersonOut(BaseModel):
+    id: str
+    username: str
+
+
+class PersonListOut(BaseModel):
+    items: list[PersonOut]
+
+
+@people_router.get("/users", response_model=PersonListOut)
+def search_users(request: Request, q: str = "") -> PersonListOut:
+    token = _bearer_token(request)
+    if token is None:
+        raise _http_error(401, "Требуется вход")
+    try:
+        request.app.state.account_by_token(token)
+    except InvalidCredentialsError as exc:
+        raise _http_error(401, str(exc)) from exc
+    people = request.app.state.search_users(q)
+    return PersonListOut(items=[PersonOut(id=person.id, username=person.username) for person in people])
