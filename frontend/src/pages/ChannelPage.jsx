@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
-import { channelHandle, filterByTitle, sortChannelVideos } from "../channel";
+import { VIDEO_SORTS, channelHandle, channelTab, filterByTitle, sortChannelVideos } from "../channel";
 import { VideoCard } from "../components/VideoCard";
 import { formatSubscribers, formatVideoCount } from "../format";
 import { useSession } from "../session";
 
 export function ChannelPage() {
   const { channelId } = useParams();
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
   const { token, account } = useSession();
   const [channel, setChannel] = useState(null);
   const [videos, setVideos] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [titles, setTitles] = useState({});
-  const [tab, setTab] = useState("home");
+  const [tab, setTab] = useState(() => channelTab(params.get("tab")));
   const [missing, setMissing] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [pickedVideo, setPickedVideo] = useState("");
@@ -55,6 +57,15 @@ export function ChannelPage() {
       active = false;
     };
   }, [channelId, token]);
+
+  useEffect(() => {
+    setTab(channelTab(params.get("tab")));
+  }, [params]);
+
+  function selectTab(next) {
+    setTab(next);
+    navigate(next === "home" ? `/channel/${channelId}` : `/channel/${channelId}?tab=${next}`, { replace: true });
+  }
 
   async function refresh() {
     const card = await api(`/channels/${channelId}`);
@@ -101,7 +112,7 @@ export function ChannelPage() {
     setPlaylistTitle("");
     setPickedVideo("");
     await refresh();
-    setTab("playlists");
+    selectTab("playlists");
   }
 
   async function addVideo(playlist, videoId) {
@@ -180,16 +191,16 @@ export function ChannelPage() {
         </div>
       </div>
       <div className="channel-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === "home"} className={tab === "home" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("home")}>
+        <button type="button" role="tab" aria-selected={tab === "home"} className={tab === "home" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => selectTab("home")}>
           Главная
         </button>
-        <button type="button" role="tab" aria-selected={tab === "videos"} className={tab === "videos" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("videos")}>
+        <button type="button" role="tab" aria-selected={tab === "videos"} className={tab === "videos" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => selectTab("videos")}>
           Видео
         </button>
-        <button type="button" role="tab" aria-selected={tab === "shorts"} className={tab === "shorts" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("shorts")}>
+        <button type="button" role="tab" aria-selected={tab === "shorts"} className={tab === "shorts" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => selectTab("shorts")}>
           Shorts
         </button>
-        <button type="button" role="tab" aria-selected={tab === "playlists"} className={tab === "playlists" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("playlists")}>
+        <button type="button" role="tab" aria-selected={tab === "playlists"} className={tab === "playlists" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => selectTab("playlists")}>
           Плейлисты
         </button>
         <button
@@ -228,7 +239,7 @@ export function ChannelPage() {
           <section className="channel-shelf">
             <div className="channel-shelf__head">
               <h2>Видео</h2>
-              <button type="button" onClick={() => setTab("videos")}>
+              <button type="button" onClick={() => selectTab("videos")}>
                 Все
               </button>
             </div>
@@ -250,7 +261,7 @@ export function ChannelPage() {
                   type="button"
                   onClick={() => {
                     setSort("popular");
-                    setTab("videos");
+                    selectTab("videos");
                   }}
                 >
                   Все
@@ -267,7 +278,7 @@ export function ChannelPage() {
             <section className="channel-shelf">
               <div className="channel-shelf__head">
                 <h2>Плейлисты</h2>
-                <button type="button" onClick={() => setTab("playlists")}>
+                <button type="button" onClick={() => selectTab("playlists")}>
                   Все
                 </button>
               </div>
@@ -279,7 +290,7 @@ export function ChannelPage() {
                     cover={playlistCover(playlist, videos)}
                     onOpen={() => {
                       setOpenPlaylist(playlist.id);
-                      setTab("playlists");
+                      selectTab("playlists");
                     }}
                   />
                 ))}
@@ -294,11 +305,19 @@ export function ChannelPage() {
           <p className="channel-empty">Видео пока нет</p>
         ) : (
           <>
-            <select className="channel-sort" aria-label="Сортировка" value={sort} onChange={(event) => setSort(event.target.value)}>
-              <option value="latest">Последние</option>
-              <option value="popular">Популярные</option>
-              <option value="oldest">Старые</option>
-            </select>
+            <div className="channel-sort" role="tablist" aria-label="Сортировка">
+              {VIDEO_SORTS.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={sort === item.id}
+                  onClick={() => setSort(item.id)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
             <div className="video-grid">
               {ordered.map((video) => (
                 <VideoCard key={video.id} video={video} dense />

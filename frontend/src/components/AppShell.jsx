@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
+import { api } from "../api/client";
 import { channelHandle } from "../channel";
+import { guideItemActive, guideYouLinks, visibleSubscriptions } from "../guide";
 import { SHORTCUTS, THEME_OPTIONS, headerChrome, themeLabel, voiceQueryPath } from "../settings";
 import { useSettings } from "../settings-context";
 import { useSession } from "../session";
@@ -20,6 +22,8 @@ const PATHS = {
   you: "M12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1Zm0 2a9 9 0 016.447 15.276 7 7 0 00-12.895 0A9 9 0 0112 3Zm0 2a4 4 0 100 8 4 4 0 000-8Zm0 2a2 2 0 110 4 2 2 0 010-4Zm-.1 9.001L11.899 16a5 5 0 014.904 3.61A8.96 8.96 0 0112 21a8.96 8.96 0 01-4.804-1.391 5 5 0 014.704-3.608Z",
   history:
     "M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z",
+  list: "M4 6h16a1 1 0 010 2H4a1 1 0 010-2zm0 5h16a1 1 0 010 2H4a1 1 0 010-2zm0 5h10a1 1 0 010 2H4a1 1 0 010-2z",
+  film: "M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v11a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-11zM10 9.2v5.6l4.4-2.8L10 9.2z",
   shield: "M12 2 4 5v6c0 5.25 3.4 8.74 8 10 4.6-1.26 8-4.75 8-10V5l-8-3Zm0 2.18 6 2.25V11c0 4.16-2.62 7.12-6 8.22C8.62 18.12 6 15.16 6 11V6.43l6-2.25Z",
   create: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z",
   bell: "M12 22a2.5 2.5 0 002.45-2h-4.9A2.5 2.5 0 0012 22zm7-6v-5a6.7 6.7 0 00-5-6.46V4a2 2 0 10-4 0v.54A6.7 6.7 0 005 11v5l-1.7 1.7A1 1 0 004 20h16a1 1 0 00.7-1.7L19 16z",
@@ -28,6 +32,7 @@ const PATHS = {
 
 export function AppShell() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [params] = useSearchParams();
   const [query, setQuery] = useState(params.get("q") || "");
   const { token, account, logout } = useSession();
@@ -41,6 +46,9 @@ export function AppShell() {
   const [notify, setNotify] = useState(false);
   const [voice, setVoice] = useState("");
   const [keys, setKeys] = useState(false);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [subsOpen, setSubsOpen] = useState(false);
+  const [youOpen, setYouOpen] = useState(true);
   const voiceRef = useRef(null);
 
   useEffect(() => {
@@ -57,6 +65,28 @@ export function AppShell() {
   useEffect(() => {
     setQuery(params.get("q") || "");
   }, [params]);
+
+  useEffect(() => {
+    if (!token) {
+      setSubscriptions([]);
+      return undefined;
+    }
+    let active = true;
+    api("/subscriptions")
+      .then((data) => {
+        if (active) {
+          setSubscriptions(data.items || []);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSubscriptions([]);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [token]);
 
   function closeIfNarrow() {
     if (narrow) {
@@ -370,25 +400,46 @@ export function AppShell() {
             <Glyph d={PATHS.shorts} />
             Shorts
           </NavLink>
-          <NavLink to="/subscriptions" onClick={closeIfNarrow}>
-            <Glyph d={PATHS.subs} />
-            Подписки
-          </NavLink>
-          <NavLink to="/you" onClick={closeIfNarrow}>
-            <Glyph d={PATHS.you} />
-            Вы
-          </NavLink>
-          <NavLink to="/history" onClick={closeIfNarrow}>
-            <Glyph d={PATHS.history} />
-            История
-          </NavLink>
-          {canModerate ? (
-            <NavLink to="/moderation" onClick={closeIfNarrow}>
-              <Glyph d={PATHS.shield} />
-              Модерация
+          <div className="guide-block">
+            <NavLink to="/subscriptions" onClick={closeIfNarrow}>
+              <Glyph d={PATHS.subs} />
+              Подписки
             </NavLink>
-          ) : null}
-          {token ? null : (
+            {visibleSubscriptions(subscriptions, subsOpen).map((channel) => (
+              <NavLink key={channel.id} className="guide-sub" to={`/channel/${channel.id}`} onClick={closeIfNarrow}>
+                <span className="guide-sub__mark" aria-hidden="true">
+                  {(channel.name || "?").slice(0, 1).toUpperCase()}
+                </span>
+                {channel.name}
+              </NavLink>
+            ))}
+            {subscriptions.length > 7 ? (
+              <button type="button" className="guide-more" onClick={() => setSubsOpen((value) => !value)}>
+                {subsOpen ? "Свернуть" : "Развернуть"}
+              </button>
+            ) : null}
+          </div>
+          {token ? (
+            <div className="guide-block">
+              <button type="button" className="guide-head" aria-expanded={youOpen} onClick={() => setYouOpen((value) => !value)}>
+                Вы
+              </button>
+              {youOpen
+                ? guideYouLinks(account).map((item) => (
+                    <Link
+                      key={item.id}
+                      to={item.to}
+                      className={guideItemActive(item, location) ? "active" : undefined}
+                      aria-current={guideItemActive(item, location) ? "page" : undefined}
+                      onClick={closeIfNarrow}
+                    >
+                      <Glyph d={PATHS[{ channel: "you", history: "history", playlists: "list", videos: "film" }[item.id]]} />
+                      {item.label}
+                    </Link>
+                  ))
+                : null}
+            </div>
+          ) : (
             <div className="guide-note">
               <p>Войдите, чтобы ставить отметки «Нравится», комментировать и подписываться.</p>
               <Link className="signin" to="/login" onClick={closeIfNarrow}>
@@ -397,6 +448,12 @@ export function AppShell() {
               </Link>
             </div>
           )}
+          {canModerate ? (
+            <NavLink to="/moderation" onClick={closeIfNarrow}>
+              <Glyph d={PATHS.shield} />
+              Модерация
+            </NavLink>
+          ) : null}
         </nav>
         <main className="content">
           <Outlet />

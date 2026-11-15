@@ -1,3 +1,15 @@
+export const VIDEO_SORTS = [
+  { id: "latest", label: "Новые" },
+  { id: "popular", label: "Популярные" },
+  { id: "oldest", label: "Старые" },
+];
+
+const CHANNEL_TABS = new Set(["home", "videos", "shorts", "playlists"]);
+
+export function channelTab(value) {
+  return CHANNEL_TABS.has(value) ? value : "home";
+}
+
 export function channelHandle(name) {
   const slug = String(name || "")
     .trim()
