@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
+import { Player } from "../components/Player";
 import { formatAgo, formatCompact, formatSubscribers, formatViews, formatDuration } from "../format";
 import { useSession } from "../session";
 
@@ -46,6 +47,7 @@ export function WatchPage() {
   const [reportReason, setReportReason] = useState("");
   const [reportSent, setReportSent] = useState(false);
   const [reportError, setReportError] = useState("");
+  const [theater, setTheater] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -281,10 +283,20 @@ export function WatchPage() {
         : others;
 
   return (
-    <article className="watch">
+    <article className={theater ? "watch watch--theater" : "watch"}>
       <div className="watch__left">
       <div className="watch__main">
-        <video className="player" src={src} controls autoPlay />
+        <Player
+          src={src}
+          autoPlay
+          theater={theater}
+          onTheater={setTheater}
+          onAutoplayNext={() => {
+            if (related[0]) {
+              navigate(`/watch/${related[0].id}`);
+            }
+          }}
+        />
         <h1 className="watch__title">{video.title}</h1>
         <div className="watch__bar">
           <div className="watch__owner">

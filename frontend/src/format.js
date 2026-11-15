@@ -62,6 +62,14 @@ export function formatViewLine(count) {
   return `${formatCompact(value)} просмотров`;
 }
 
+export function formatVideoCount(count) {
+  const value = whole(count);
+  if (value >= 1000) {
+    return `${formatCompact(value)} видео`;
+  }
+  return `${formatGrouped(value)} видео`;
+}
+
 export function formatSubscribers(count) {
   const value = whole(count);
   if (value >= 1000) {

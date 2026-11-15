@@ -3,7 +3,7 @@ import { Link, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { VideoCard } from "../components/VideoCard";
-import { formatSubscribers } from "../format";
+import { formatSubscribers, formatVideoCount } from "../format";
 import { useSession } from "../session";
 
 export function ChannelPage() {
@@ -13,7 +13,7 @@ export function ChannelPage() {
   const [videos, setVideos] = useState([]);
   const [playlists, setPlaylists] = useState([]);
   const [titles, setTitles] = useState({});
-  const [tab, setTab] = useState("videos");
+  const [tab, setTab] = useState("home");
   const [missing, setMissing] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [pickedVideo, setPickedVideo] = useState("");
@@ -121,6 +121,7 @@ export function ChannelPage() {
   const isOwner = account?.channel_id === channel.id;
   const ownVideos = videos.filter((video) => video.status !== "hidden");
   const letter = channel.name.slice(0, 1).toUpperCase();
+  const latest = videos.slice(0, 8);
 
   return (
     <section className="channel">
@@ -131,30 +132,83 @@ export function ChannelPage() {
         </span>
         <div className="channel-identity">
           <h1>{channel.name}</h1>
-          <p>{formatSubscribers(channel.subscriber_count)}</p>
+          <p>
+            {formatSubscribers(channel.subscriber_count)} • {formatVideoCount(channel.videos.length)}
+          </p>
+          {isOwner ? (
+            <Link className="subscribe" to="/upload">
+              Управление видео
+            </Link>
+          ) : token ? (
+            <button
+              type="button"
+              className={channel.subscribed ? "subscribe subscribe--on" : "subscribe"}
+              onClick={toggleSubscribe}
+            >
+              {channel.subscribed ? "Вы подписаны" : "Подписаться"}
+            </button>
+          ) : (
+            <Link className="subscribe" to="/login">
+              Подписаться
+            </Link>
+          )}
         </div>
-        {token ? (
-          <button
-            type="button"
-            className={channel.subscribed ? "subscribe subscribe--on" : "subscribe"}
-            onClick={toggleSubscribe}
-          >
-            {channel.subscribed ? "Вы подписаны" : "Подписаться"}
-          </button>
-        ) : (
-          <Link className="subscribe" to="/login">
-            Подписаться
-          </Link>
-        )}
       </div>
       <div className="channel-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={tab === "home"} className={tab === "home" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("home")}>
+          Главная
+        </button>
         <button type="button" role="tab" aria-selected={tab === "videos"} className={tab === "videos" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("videos")}>
           Видео
+        </button>
+        <button type="button" role="tab" aria-selected={tab === "shorts"} className={tab === "shorts" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("shorts")}>
+          Shorts
         </button>
         <button type="button" role="tab" aria-selected={tab === "playlists"} className={tab === "playlists" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("playlists")}>
           Плейлисты
         </button>
       </div>
+      {tab === "home" ? (
+        <div className="channel-home">
+          <section className="channel-shelf">
+            <div className="channel-shelf__head">
+              <h2>Видео</h2>
+              <button type="button" onClick={() => setTab("videos")}>
+                Все
+              </button>
+            </div>
+            {latest.length === 0 ? (
+              <p className="channel-empty">Видео пока нет</p>
+            ) : (
+              <div className="channel-shelf__row">
+                {latest.map((video) => (
+                  <VideoCard key={video.id} video={video} />
+                ))}
+              </div>
+            )}
+          </section>
+          {playlists.length > 0 ? (
+            <section className="channel-shelf">
+              <div className="channel-shelf__head">
+                <h2>Плейлисты</h2>
+                <button type="button" onClick={() => setTab("playlists")}>
+                  Все
+                </button>
+              </div>
+              <ul className="playlist-list">
+                {playlists.map((playlist) => (
+                  <li key={playlist.id}>
+                    <button type="button" className="channel-shelf__playlist" onClick={() => setTab("playlists")}>
+                      {playlist.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+      ) : null}
+      {tab === "shorts" ? <p className="channel-empty">Смотреть пока нечего</p> : null}
       {tab === "videos" ? (
         videos.length === 0 ? (
           <p className="channel-empty">Видео пока нет</p>
@@ -165,7 +219,8 @@ export function ChannelPage() {
             ))}
           </div>
         )
-      ) : (
+      ) : null}
+      {tab === "playlists" ? (
         <div className="playlist-panel">
           {isOwner ? (
             <form className="playlist-form" onSubmit={createPlaylist}>
@@ -204,7 +259,7 @@ export function ChannelPage() {
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

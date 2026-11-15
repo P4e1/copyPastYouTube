@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { formatAgo, formatCompact, formatSubscribers, formatViews } from "./format.js";
+import { formatAgo, formatCompact, formatSubscribers, formatVideoCount, formatViews } from "./format.js";
 
 const now = Date.parse("2026-11-15T15:00:00Z");
 
@@ -21,6 +21,12 @@ test("formatCompact uses YouTube-style units", () => {
 test("formatSubscribers abbreviates large counts", () => {
   assert.equal(formatSubscribers(1), "1 подписчик");
   assert.equal(formatSubscribers(297000), "297 тыс. подписчиков");
+});
+
+test("formatVideoCount matches the channel header line", () => {
+  assert.equal(formatVideoCount(1), "1 видео");
+  assert.equal(formatVideoCount(12), "12 видео");
+  assert.equal(formatVideoCount(1500), "1,5 тыс. видео");
 });
 
 test("formatAgo matches the watch-page wording", () => {
