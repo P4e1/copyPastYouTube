@@ -1,9 +1,56 @@
 :root {
-  color: #0f0f0f;
-  background: #fff;
+  color-scheme: light;
+  --bg: #fff;
+  --text: #0f0f0f;
+  --muted: #606060;
+  --chip: #f2f2f2;
+  --chip-on: #0f0f0f;
+  --chip-on-text: #fff;
+  --hover: #f2f2f2;
+  --menu: #fff;
+  --border: #d3d3d3;
+  --line: #e5e5e5;
+  --search-btn: #f8f8f8;
+  --key: #eee;
+  --key-on: #d3d3d3;
+  --field: #fff;
+  --subscribe: #0f0f0f;
+  --subscribe-text: #fff;
+  --logo: #0f0f0f;
+  --active: #e5e5e5;
+  --thumb: #e5e5e5;
+  --raised: #f2f2f2;
+  color: var(--text);
+  background: var(--bg);
   font-family: Roboto, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.4;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f0f0f;
+  --text: #f1f1f1;
+  --muted: #aaa;
+  --chip: #272727;
+  --chip-on: #f1f1f1;
+  --chip-on-text: #0f0f0f;
+  --hover: #272727;
+  --menu: #282828;
+  --border: #3f3f3f;
+  --line: #3f3f3f;
+  --search-btn: #222;
+  --key: #272727;
+  --key-on: #3f3f3f;
+  --field: #0f0f0f;
+  --subscribe: #f1f1f1;
+  --subscribe-text: #0f0f0f;
+  --logo: #fff;
+  --active: #272727;
+  --thumb: #272727;
+  --raised: #272727;
+  color: var(--text);
+  background: var(--bg);
 }
 
 * {
@@ -13,8 +60,8 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: #fff;
-  color: #0f0f0f;
+  background: var(--bg);
+  color: var(--text);
 }
 
 button,
@@ -44,7 +91,7 @@ svg {
   gap: 8px;
   height: 56px;
   padding: 0 16px;
-  background: #fff;
+  background: var(--bg);
 }
 
 .topbar__start,
@@ -73,7 +120,7 @@ svg {
   width: min(720px, calc(100vw - 32px));
   padding: 12px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--menu);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.28);
   transform: translateX(-50%);
 }
@@ -83,7 +130,7 @@ svg {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 8px;
-  color: #606060;
+  color: var(--muted);
 }
 
 .osk__head button {
@@ -108,7 +155,8 @@ svg {
   height: 36px;
   border: 0;
   border-radius: 6px;
-  background: #eee;
+  background: var(--key);
+  color: var(--text);
 }
 
 .osk__key--wide {
@@ -120,7 +168,7 @@ svg {
 }
 
 .osk__key[aria-pressed="true"] {
-  background: #d3d3d3;
+  background: var(--key-on);
 }
 
 .topbar__end {
@@ -138,17 +186,17 @@ svg {
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: #0f0f0f;
+  color: var(--text);
 }
 
 .icon-button:hover,
 .chip:hover,
 .avatar:hover {
-  background: #f2f2f2;
+  background: var(--hover);
 }
 
 .mic {
-  background: #f2f2f2;
+  background: var(--chip);
 }
 
 .logo {
@@ -164,7 +212,7 @@ svg {
   position: absolute;
   top: 4px;
   right: 2px;
-  color: #606060;
+  color: var(--muted);
   font-size: 10px;
   font-weight: 500;
   line-height: 1;
@@ -173,7 +221,7 @@ svg {
 .logo__svg {
   width: 93px;
   height: 20px;
-  fill: #0f0f0f;
+  fill: var(--logo);
 }
 
 .search {
@@ -220,16 +268,16 @@ svg {
   min-width: 0;
   height: 40px;
   padding: 0 72px 0 16px;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
   border-right: 0;
   border-radius: 40px 0 0 40px;
-  background: #fff;
-  color: #0f0f0f;
+  background: var(--field);
+  color: var(--text);
   outline: none;
 }
 
 .search__input::placeholder {
-  color: #606060;
+  color: var(--muted);
 }
 
 .search__input:focus {
@@ -243,10 +291,10 @@ svg {
   width: 64px;
   height: 40px;
   padding: 0;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
   border-radius: 0 40px 40px 0;
-  background: #f8f8f8;
-  color: #0f0f0f;
+  background: var(--search-btn);
+  color: var(--text);
 }
 
 .chip,
@@ -264,13 +312,13 @@ svg {
 
 .chip {
   border: 0;
-  background: #f2f2f2;
-  color: #0f0f0f;
+  background: var(--chip);
+  color: var(--text);
 }
 
 .signin {
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
+  border: 1px solid var(--line);
+  background: var(--bg);
   color: #065fd4;
   font-weight: 500;
 }
@@ -305,7 +353,7 @@ svg {
   min-width: 220px;
   padding: 8px 0;
   border-radius: 12px;
-  background: #fff;
+  background: var(--menu);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -318,7 +366,7 @@ svg {
 }
 
 .create-menu a:hover {
-  background: #f2f2f2;
+  background: var(--hover);
 }
 
 .avatar-wrap {
@@ -335,7 +383,7 @@ svg {
   overflow: auto;
   padding: 8px 0;
   border-radius: 12px;
-  background: #fff;
+  background: var(--menu);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -354,7 +402,7 @@ svg {
 
 .account-menu__muted,
 .account-menu__note {
-  color: #606060;
+  color: var(--muted);
   font-size: 12px;
 }
 
@@ -376,7 +424,7 @@ svg {
 
 .account-menu a:hover,
 .account-menu button:hover {
-  background: #f2f2f2;
+  background: var(--hover);
 }
 
 .search__back + .search__input {
@@ -397,7 +445,7 @@ svg {
   min-height: 280px;
   padding: 8px 16px 24px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--menu);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
 }
 
@@ -414,7 +462,7 @@ svg {
 
 .notify-panel p {
   margin: 8px 0;
-  color: #606060;
+  color: var(--muted);
 }
 
 .notify-panel a {
@@ -441,7 +489,7 @@ svg {
   width: min(420px, 92vw);
   padding: 20px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--menu);
 }
 
 .dialog__card h2 {
@@ -454,7 +502,7 @@ svg {
   padding: 0 16px;
   border: 0;
   border-radius: 18px;
-  background: #f2f2f2;
+  background: var(--chip);
 }
 
 .dialog__card ul {
@@ -468,7 +516,7 @@ svg {
   justify-content: space-between;
   gap: 16px;
   padding: 8px 0;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--line);
 }
 
 .search__back {
@@ -478,10 +526,10 @@ svg {
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
   border-right: 0;
   border-radius: 40px 0 0 40px;
-  background: #fff;
+  background: var(--field);
 }
 
 .topbar--search {
@@ -523,7 +571,7 @@ svg {
 }
 
 .settings__nav a.active {
-  background: #e5e5e5;
+  background: var(--active);
   font-weight: 500;
 }
 
@@ -534,7 +582,7 @@ svg {
 
 .settings__muted {
   display: block;
-  color: #606060;
+  color: var(--muted);
   font-size: 12px;
 }
 
@@ -544,7 +592,7 @@ svg {
   justify-content: space-between;
   gap: 16px;
   padding: 12px 0;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--line);
 }
 
 .channel-mini {
@@ -557,7 +605,7 @@ svg {
 }
 
 .account-menu button:hover {
-  background: #f2f2f2;
+  background: var(--hover);
 }
 
 .shell__body {
@@ -573,7 +621,7 @@ svg {
   height: calc(100vh - 56px);
   padding: 12px;
   overflow: auto;
-  background: #fff;
+  background: var(--bg);
   position: sticky;
   top: 56px;
 }
@@ -585,23 +633,23 @@ svg {
   height: 40px;
   padding: 0 12px;
   border-radius: 10px;
-  color: #0f0f0f;
+  color: var(--text);
   text-decoration: none;
 }
 
 .sidebar a.active {
-  background: #f2f2f2;
+  background: var(--hover);
   font-weight: 500;
 }
 
 .sidebar a:hover {
-  background: #f2f2f2;
+  background: var(--hover);
 }
 
 .guide-block {
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--line);
 }
 
 .guide-head,
@@ -624,7 +672,7 @@ svg {
 .guide-head:hover,
 .guide-more:hover,
 .guide-sub:hover {
-  background: #f2f2f2;
+  background: var(--hover);
 }
 
 .guide-sub {
@@ -646,7 +694,7 @@ svg {
 .guide-note {
   margin-top: 12px;
   padding: 16px 12px 8px;
-  border-top: 1px solid #e5e5e5;
+  border-top: 1px solid var(--line);
 }
 
 .guide-note p {
@@ -673,7 +721,7 @@ svg {
   margin: 24px auto;
   padding: 28px 24px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--bg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
   text-align: center;
 }
@@ -705,7 +753,7 @@ svg {
   min-height: 100vh;
   place-items: center;
   padding: 24px;
-  background: #fff;
+  background: var(--bg);
 }
 
 .auth__card {
@@ -713,9 +761,9 @@ svg {
   gap: 14px;
   width: min(400px, 100%);
   padding: 28px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fff;
+  background: var(--bg);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
@@ -727,16 +775,16 @@ svg {
 .auth__card label {
   display: grid;
   gap: 6px;
-  color: #606060;
+  color: var(--muted);
 }
 
 .auth__card input {
   height: 40px;
   padding: 0 12px;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: #fff;
-  color: #0f0f0f;
+  background: var(--field);
+  color: var(--text);
 }
 
 .auth__card button[type="submit"] {
@@ -755,7 +803,7 @@ svg {
 
 .auth__switch {
   margin: 0;
-  color: #606060;
+  color: var(--muted);
 }
 
 .auth__switch a {
@@ -781,7 +829,7 @@ svg {
   aspect-ratio: 16 / 9;
   overflow: hidden;
   border-radius: 12px;
-  background: #e5e5e5;
+  background: var(--thumb);
 }
 
 .thumb img,
@@ -838,7 +886,7 @@ svg {
 .watch__subs,
 .search-row__desc {
   margin: 4px 0 0;
-  color: #606060;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -1102,7 +1150,7 @@ svg {
 }
 
 .watch-bell {
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
 }
 
 .watch-tools {
@@ -1117,7 +1165,7 @@ svg {
   width: min(360px, calc(100vw - 32px));
   padding: 16px;
   border-radius: 12px;
-  background: #fff;
+  background: var(--menu);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.28);
 }
 
@@ -1138,7 +1186,7 @@ svg {
   border-radius: 18px;
   height: 36px;
   padding: 0 12px;
-  background: #f2f2f2;
+  background: var(--chip);
 }
 
 .watch-pop input,
@@ -1146,7 +1194,7 @@ svg {
   width: 100%;
   margin-bottom: 8px;
   border: 0;
-  border-bottom: 1px solid #d3d3d3;
+  border-bottom: 1px solid var(--border);
   padding: 8px 0;
   background: transparent;
 }
@@ -1167,15 +1215,15 @@ svg {
   align-items: center;
   gap: 6px;
   border: 0;
-  background: #f2f2f2;
+  background: var(--chip);
   border-radius: 18px;
   height: 36px;
   padding: 0 12px;
 }
 
 .action--on {
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--chip-on);
+  color: var(--chip-on-text);
 }
 
 .action--icon {
@@ -1207,21 +1255,21 @@ svg {
   padding: 0 16px;
   border: 0;
   border-radius: 18px;
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--subscribe);
+  color: var(--subscribe-text);
   font-weight: 500;
 }
 
 .subscribe--on {
-  background: #f2f2f2;
-  color: #0f0f0f;
+  background: var(--chip);
+  color: var(--text);
 }
 
 .description {
   margin-top: 12px;
   padding: 12px;
   border-radius: 12px;
-  background: #f2f2f2;
+  background: var(--raised);
 }
 
 .description p {
@@ -1262,7 +1310,7 @@ svg {
 
 .comments h2 span {
   margin-left: 6px;
-  color: #606060;
+  color: var(--muted);
   font-weight: 400;
 }
 
@@ -1288,13 +1336,13 @@ svg {
   padding: 0 12px;
   border: 0;
   border-radius: 8px;
-  background: #f2f2f2;
+  background: var(--chip);
   font-weight: 500;
 }
 
 .filter-chip--on {
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--chip-on);
+  color: var(--chip-on-text);
 }
 
 .related-list {
@@ -1325,7 +1373,7 @@ svg {
 .related-card p,
 .watch__empty {
   margin: 2px 0 0;
-  color: #606060;
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -1411,8 +1459,9 @@ svg {
   flex: 1;
   height: 36px;
   border: 0;
-  border-bottom: 1px solid #d3d3d3;
+  border-bottom: 1px solid var(--border);
   background: transparent;
+  color: var(--text);
 }
 
 .comment-form button {
@@ -1498,7 +1547,7 @@ svg {
 .channel-avatar--large {
   width: 128px;
   height: 128px;
-  border: 4px solid #fff;
+  border: 4px solid var(--bg);
   font-size: 48px;
   background: #e65100;
 }
@@ -1516,15 +1565,15 @@ svg {
 
 .channel-identity p {
   margin: 6px 0 0;
-  color: #606060;
+  color: var(--muted);
 }
 
 .channel-head .subscribe {
   display: inline-flex;
   align-items: center;
   margin: 12px 0 0;
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--subscribe);
+  color: var(--subscribe-text);
   text-decoration: none;
 }
 
@@ -1548,7 +1597,7 @@ svg {
 .channel-shelf__playlist {
   border: 0;
   background: transparent;
-  color: #0f0f0f;
+  color: var(--text);
   font-weight: 500;
 }
 
@@ -1564,14 +1613,14 @@ svg {
 .channel-about {
   margin: 8px 0 0;
   max-width: 640px;
-  color: #0f0f0f;
+  color: var(--text);
 }
 
 .channel-about button {
   margin-left: 6px;
   border: 0;
   background: transparent;
-  color: #606060;
+  color: var(--muted);
   font-weight: 500;
 }
 
@@ -1580,7 +1629,7 @@ svg {
   align-items: center;
   gap: 8px;
   margin: 20px 0 12px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 1px solid var(--line);
 }
 
 .channel-search {
@@ -1600,7 +1649,7 @@ svg {
   height: 36px;
   margin: 0 0 16px auto;
   border: 0;
-  border-bottom: 1px solid #0f0f0f;
+  border-bottom: 1px solid var(--text);
   background: transparent;
 }
 
@@ -1615,12 +1664,12 @@ svg {
   padding: 0 12px;
   border: 0;
   border-radius: 8px;
-  background: #f2f2f2;
+  background: var(--chip);
 }
 
 .channel-sort button[aria-selected="true"] {
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--chip-on);
+  color: var(--chip-on-text);
 }
 
 .video-card--dense .video-card__body {
@@ -1660,7 +1709,7 @@ svg {
 
 .playlist-card p {
   margin: 4px 0 0;
-  color: #606060;
+  color: var(--muted);
 }
 
 .channel-tab {
@@ -1673,7 +1722,7 @@ svg {
 }
 
 .channel-tab--on {
-  border-bottom-color: #0f0f0f;
+  border-bottom-color: var(--text);
 }
 
 .thumb__hidden {
@@ -1723,10 +1772,11 @@ svg {
 .playlist-form input,
 .playlist-form select {
   height: 36px;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 0 12px;
-  background: #fff;
+  background: var(--field);
+  color: var(--text);
 }
 
 .playlist-form button {
@@ -1734,12 +1784,12 @@ svg {
   border: 0;
   border-radius: 18px;
   padding: 0 16px;
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--subscribe);
+  color: var(--subscribe-text);
 }
 
 .channel-empty {
-  color: #606060;
+  color: var(--muted);
 }
 
 .upload {
@@ -1762,7 +1812,7 @@ svg {
   width: 100%;
   height: 8px;
   border-radius: 4px;
-  background: #e5e5e5;
+  background: var(--line);
   overflow: hidden;
 }
 
@@ -1777,9 +1827,11 @@ svg {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  border: 1px solid #d3d3d3;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 12px;
+  background: var(--field);
+  color: var(--text);
 }
 
 .upload__step button,
@@ -1789,13 +1841,13 @@ svg {
   border: 0;
   border-radius: 18px;
   padding: 0 16px;
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--subscribe);
+  color: var(--subscribe-text);
 }
 
 .upload__step button:disabled {
-  background: #e5e5e5;
-  color: #606060;
+  background: var(--line);
+  color: var(--muted);
 }
 
 .upload__error {
@@ -1843,7 +1895,7 @@ svg {
 
 .report-row {
   padding: 16px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--line);
   border-radius: 12px;
 }
 
@@ -1857,9 +1909,11 @@ svg {
   width: 100%;
   box-sizing: border-box;
   margin-top: 8px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 12px;
+  background: var(--field);
+  color: var(--text);
   font: inherit;
 }
 
@@ -1870,8 +1924,8 @@ svg {
   border: 0;
   border-radius: 18px;
   padding: 0 16px;
-  background: #0f0f0f;
-  color: #fff;
+  background: var(--subscribe);
+  color: var(--subscribe-text);
 }
 
 .moderation__error,
@@ -1946,92 +2000,4 @@ svg {
   .settings__layout {
     grid-template-columns: 1fr;
   }
-}
-
-html[data-theme="dark"] {
-  color-scheme: dark;
-  background: #0f0f0f;
-  color: #f1f1f1;
-}
-
-html[data-theme="dark"] body,
-html[data-theme="dark"] .topbar,
-html[data-theme="dark"] .sidebar,
-html[data-theme="dark"] .content,
-html[data-theme="dark"] .account-menu,
-html[data-theme="dark"] .create-menu,
-html[data-theme="dark"] .notify-panel,
-html[data-theme="dark"] .dialog__card,
-html[data-theme="dark"] .search__input,
-html[data-theme="dark"] .search__back,
-html[data-theme="dark"] .auth,
-html[data-theme="dark"] .auth__card,
-html[data-theme="dark"] .empty,
-html[data-theme="dark"] .description,
-html[data-theme="dark"] .settings,
-html[data-theme="dark"] .watch-pop {
-  background: #0f0f0f;
-  color: #f1f1f1;
-}
-
-html[data-theme="dark"] .icon-button:hover,
-html[data-theme="dark"] .chip,
-html[data-theme="dark"] .chip:hover,
-html[data-theme="dark"] .mic,
-html[data-theme="dark"] .search__button,
-html[data-theme="dark"] .sidebar a.active,
-html[data-theme="dark"] .sidebar a:hover,
-html[data-theme="dark"] .account-menu a:hover,
-html[data-theme="dark"] .account-menu button:hover,
-html[data-theme="dark"] .create-menu a:hover,
-html[data-theme="dark"] .settings__nav a.active,
-html[data-theme="dark"] .description,
-html[data-theme="dark"] .subscribe--on {
-  background: #272727;
-  color: #f1f1f1;
-}
-
-html[data-theme="dark"] .search__input,
-html[data-theme="dark"] .search__back,
-html[data-theme="dark"] .signin,
-html[data-theme="dark"] .auth__card input,
-html[data-theme="dark"] .osk {
-  border-color: #3f3f3f;
-  background: #0f0f0f;
-  color: #f1f1f1;
-}
-
-html[data-theme="dark"] .osk__key {
-  background: #272727;
-  color: #f1f1f1;
-}
-
-html[data-theme="dark"] .logo__svg {
-  fill: #fff;
-}
-
-html[data-theme="dark"] .logo__region,
-html[data-theme="dark"] .account-menu__muted,
-html[data-theme="dark"] .account-menu__note,
-html[data-theme="dark"] .notify-panel p,
-html[data-theme="dark"] .settings__muted,
-html[data-theme="dark"] .video-card__meta,
-html[data-theme="dark"] .watch__subs {
-  color: #aaa;
-}
-
-html[data-theme="dark"] .channel-sort button,
-html[data-theme="dark"] .guide-head,
-html[data-theme="dark"] .guide-more {
-  background: transparent;
-  color: #f1f1f1;
-}
-
-html[data-theme="dark"] .channel-sort button {
-  background: #272727;
-}
-
-html[data-theme="dark"] .channel-sort button[aria-selected="true"] {
-  background: #f1f1f1;
-  color: #0f0f0f;
 }
