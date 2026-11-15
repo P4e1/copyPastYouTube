@@ -7,10 +7,19 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
 
+dump_logs() {
+  echo "Состояние контейнеров и последние логи API и MinIO:"
+  docker compose ps || true
+  docker compose logs --tail 120 api minio || true
+}
+
 if ! docker compose build; then
   echo "Сборка образов не удалась. Поднимаю уже собранные локальные образы."
 fi
-docker compose up -d --pull never
+if ! docker compose up -d --pull never; then
+  dump_logs
+  exit 1
+fi
 
 echo "Жду API и MinIO..."
 ready=0
@@ -23,6 +32,7 @@ for _ in $(seq 1 60); do
 done
 if [[ "$ready" != 1 ]]; then
   echo "API не ответил на /health"
+  dump_logs
   exit 1
 fi
 
@@ -36,6 +46,7 @@ for _ in $(seq 1 60); do
 done
 if [[ "$minio_ready" != 1 ]]; then
   echo "MinIO не ответил"
+  dump_logs
   exit 1
 fi
 
