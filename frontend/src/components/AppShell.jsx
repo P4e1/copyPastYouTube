@@ -31,6 +31,7 @@ export function AppShell() {
   const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches);
   const [open, setOpen] = useState(() => !window.matchMedia(NARROW).matches);
   const [menu, setMenu] = useState(false);
+  const [createMenu, setCreateMenu] = useState(false);
 
   useEffect(() => {
     const query = window.matchMedia(NARROW);
@@ -53,8 +54,26 @@ export function AppShell() {
     }
   }
 
+  useEffect(() => {
+    if (!createMenu) {
+      return undefined;
+    }
+    function onPointer(event) {
+      if (!event.target.closest(".create-wrap")) {
+        setCreateMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", onPointer);
+    return () => document.removeEventListener("mousedown", onPointer);
+  }, [createMenu]);
+
   function onCreate() {
-    navigate(token ? "/upload" : "/login");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    setMenu(false);
+    setCreateMenu((value) => !value);
   }
 
   function onLogout() {
@@ -109,10 +128,26 @@ export function AppShell() {
           </button>
         </div>
         <div className="topbar__end">
-          <button type="button" className="chip" onClick={onCreate}>
-            <Glyph d={PATHS.create} />
-            <span>Создать</span>
-          </button>
+          <div className="create-wrap">
+            <button
+              type="button"
+              className="chip"
+              aria-expanded={token ? createMenu : undefined}
+              aria-haspopup={token ? "menu" : undefined}
+              onClick={onCreate}
+            >
+              <Glyph d={PATHS.create} />
+              <span>Создать</span>
+            </button>
+            {token && createMenu ? (
+              <div className="create-menu" role="menu">
+                <Link role="menuitem" to="/upload" onClick={() => setCreateMenu(false)}>
+                  <VideoGlyph />
+                  Добавить видео
+                </Link>
+              </div>
+            ) : null}
+          </div>
           {token ? (
             <>
               <button type="button" className="icon-button" aria-label="Уведомления">
@@ -191,6 +226,15 @@ export function AppShell() {
         </main>
       </div>
     </div>
+  );
+}
+
+function VideoGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+      <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11Zm1.6 0v11c0 .5.4.9.9.9h11c.5 0 .9-.4.9-.9v-11c0-.5-.4-.9-.9-.9h-11c-.5 0-.9.4-.9.9Z" />
+      <path d="M10.2 8.7a.7.7 0 0 0-1.1.6v5.4a.7.7 0 0 0 1.1.6l4.2-2.7a.7.7 0 0 0 0-1.2l-4.2-2.7Z" />
+    </svg>
   );
 }
 
