@@ -53,4 +53,10 @@ fi
 docker compose exec -T api alembic -c alembic.ini upgrade head
 docker compose exec -T api python /scripts/seed.py
 
+# Docker в WSL слушает порт, а браузер Windows ходит на свой localhost.
+# Если проброс WSL не поднялся, Windows получает ERR_CONNECTION_REFUSED.
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  bash "$PWD/scripts/ensure_windows_localhost.sh"
+fi
+
 echo "Готово: http://localhost:8080"
