@@ -7,7 +7,10 @@ if [[ ! -f .env ]]; then
   cp .env.example .env
 fi
 
-docker compose up --build -d
+if ! docker compose build; then
+  echo "Сборка образов не удалась. Поднимаю уже собранные локальные образы."
+fi
+docker compose up -d --pull never
 
 echo "Жду API и MinIO..."
 ready=0
