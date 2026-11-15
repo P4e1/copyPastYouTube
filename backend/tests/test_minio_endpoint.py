@@ -1,6 +1,6 @@
 """Внутренний адрес MinIO берётся по IPv4, подключение повторяется."""
 
-from app.infrastructure.minio_storage import call_with_retry, ipv4_netloc
+from app.infrastructure.minio_storage import MinioObjectStorage, call_with_retry, ipv4_netloc
 
 
 def test_ipv4_netloc_uses_lookup():
@@ -30,3 +30,23 @@ def test_call_with_retry_returns_after_failure():
 
     assert call_with_retry(action, attempts=3, pause=2, sleep=pauses.append) == "ok"
     assert pauses == [2, 2]
+
+
+def test_presign_client_pins_region():
+    seen = {}
+
+    class FakeMinio:
+        def __init__(self, endpoint, **kwargs):
+            seen["endpoint"] = endpoint
+            seen.update(kwargs)
+
+    MinioObjectStorage._client(
+        FakeMinio,
+        "http://localhost:9000",
+        "minio",
+        "change-me-minio",
+        resolve_ipv4=False,
+    )
+
+    assert seen["endpoint"] == "localhost:9000"
+    assert seen["region"] == "us-east-1"

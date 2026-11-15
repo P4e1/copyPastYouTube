@@ -84,17 +84,17 @@ export function UploadPage() {
     setError("");
     setProgress(0);
     const draftTitle = file.name.replace(/\.mp4$/i, "") || "Черновик";
-    const created = await api("/videos", {
-      method: "POST",
-      body: { title: draftTitle, description: "", visibility: "public", grant_user_ids: [] },
-    });
-    setDraft(created);
-    setTitle(draftTitle);
     try {
+      const created = await api("/videos", {
+        method: "POST",
+        body: { title: draftTitle, description: "", visibility: "public", grant_user_ids: [] },
+      });
+      setDraft(created);
+      setTitle(draftTitle);
       await putFile(created.upload_url, file, setProgress);
       setProgress(100);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Не удалось создать ролик");
     }
   }
 

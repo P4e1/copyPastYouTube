@@ -21,6 +21,38 @@ def _ensure_ffmpeg():
     assert shutil.which("ffmpeg"), "Для сида нужен ffmpeg в PATH"
 
 
+def test_seed_rewrites_demo_password(client, app):
+    from sqlalchemy import text
+
+    from app.infrastructure import db
+    from app.infrastructure.passwords import PwdlibHasher
+    from scripts.seed import _ensure_user
+
+    email = "admin@demo.local"
+    created = client.post(
+        "/auth/register",
+        json={"email": email, "username": "admin", "password": "old-pass"},
+    )
+    assert created.status_code in {201, 409}
+    hashed = PwdlibHasher().hash("old-pass")
+    with db._engine.begin() as connection:
+        connection.execute(
+            text("update users set password_hash = :password_hash where email = :email"),
+            {"password_hash": hashed, "email": email},
+        )
+
+    stale = client.post("/auth/login", json={"email": email, "password": "old-pass"})
+    assert stale.status_code == 200
+
+    _ensure_user(app, email, "admin", "admin")
+
+    rejected = client.post("/auth/login", json={"email": email, "password": "old-pass"})
+    accepted = client.post("/auth/login", json={"email": email, "password": "demo-pass"})
+    assert rejected.status_code == 401
+    assert accepted.status_code == 200
+    assert accepted.json()["user"]["role"] == "admin"
+
+
 def test_seed_twice_keeps_one_copy_of_demo_data(client, app):
     _ensure_ffmpeg()
     from scripts.seed import apply

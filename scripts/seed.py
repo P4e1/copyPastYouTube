@@ -8,7 +8,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from app.domain.auth import EmailTakenError
+from app.domain.auth import EmailTakenError, InvalidCredentialsError
 from app.domain.errors import NotFoundError
 from app.infrastructure.media_gateway import run_once
 
@@ -61,11 +61,28 @@ def _ensure_user(app, email: str, username: str, role: str):
     try:
         account = app.state.register_account(email, username, PASSWORD)
     except EmailTakenError:
-        account, _token = app.state.login_account(email, PASSWORD)
+        try:
+            account, _token = app.state.login_account(email, PASSWORD)
+        except InvalidCredentialsError:
+            _set_password(email, PASSWORD)
+            account, _token = app.state.login_account(email, PASSWORD)
     if account.role != role:
         _set_role(account.id, role)
         account, _token = app.state.login_account(email, PASSWORD)
     return account
+
+
+def _set_password(email: str, password: str) -> None:
+    from sqlalchemy import text
+
+    from app.infrastructure import db
+    from app.infrastructure.passwords import PwdlibHasher
+
+    with db._engine.begin() as connection:
+        connection.execute(
+            text("update users set password_hash = :password_hash where email = :email"),
+            {"password_hash": PwdlibHasher().hash(password), "email": email},
+        )
 
 
 def _set_role(user_id: str, role: str) -> None:

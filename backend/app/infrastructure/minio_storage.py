@@ -86,6 +86,7 @@ class MinioObjectStorage:
             access_key=access_key,
             secret_key=secret_key,
             secure=parsed.scheme == "https",
+            region="us-east-1",
             http_client=http,
         )
 
