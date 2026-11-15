@@ -60,8 +60,67 @@ svg {
 }
 
 .topbar__center {
+  position: relative;
   justify-content: center;
   gap: 8px;
+}
+
+.osk {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  z-index: 30;
+  width: min(720px, calc(100vw - 32px));
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.28);
+  transform: translateX(-50%);
+}
+
+.osk__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #606060;
+}
+
+.osk__head button {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.osk__row {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.osk__key {
+  flex: 1;
+  height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: #eee;
+}
+
+.osk__key--wide {
+  flex: 1.4;
+}
+
+.osk__key--space {
+  flex: 6;
+}
+
+.osk__key[aria-pressed="true"] {
+  background: #d3d3d3;
 }
 
 .topbar__end {
@@ -118,17 +177,49 @@ svg {
 }
 
 .search {
+  position: relative;
   display: flex;
   width: min(640px, 100%);
   min-width: 0;
   height: 40px;
 }
 
-.search__input {
+.search__field {
+  position: relative;
   flex: 1;
   min-width: 0;
+}
+
+.search__tools {
+  position: absolute;
+  top: 0;
+  right: 4px;
+  display: flex;
+  align-items: center;
   height: 40px;
-  padding: 0 16px;
+}
+
+.search__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.search__input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.search__input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  padding: 0 72px 0 16px;
   border: 1px solid #d3d3d3;
   border-right: 0;
   border-radius: 40px 0 0 40px;
@@ -1901,12 +1992,17 @@ html[data-theme="dark"] .subscribe--on {
 }
 
 html[data-theme="dark"] .search__input,
-html[data-theme="dark"] .search__button,
 html[data-theme="dark"] .search__back,
 html[data-theme="dark"] .signin,
-html[data-theme="dark"] .auth__card input {
+html[data-theme="dark"] .auth__card input,
+html[data-theme="dark"] .osk {
   border-color: #3f3f3f;
   background: #0f0f0f;
+  color: #f1f1f1;
+}
+
+html[data-theme="dark"] .osk__key {
+  background: #272727;
   color: #f1f1f1;
 }
 

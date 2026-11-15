@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from
 import { api } from "../api/client";
 import { channelHandle } from "../channel";
 import { guideItemActive, guideYouLinks, visibleSubscriptions } from "../guide";
+import { applyKey, keyLabel, keyboardRows, toggleLayout } from "../keyboard";
 import { SHORTCUTS, THEME_OPTIONS, headerChrome, themeLabel, voiceQueryPath } from "../settings";
 import { useSettings } from "../settings-context";
 import { useSession } from "../session";
@@ -40,6 +41,9 @@ export function AppShell() {
   const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches);
   const [open, setOpen] = useState(() => !window.matchMedia(NARROW).matches);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [keyboard, setKeyboard] = useState(false);
+  const [layout, setLayout] = useState("ru");
+  const [shift, setShift] = useState(false);
   const [menu, setMenu] = useState(false);
   const [panel, setPanel] = useState("main");
   const [createMenu, setCreateMenu] = useState(false);
@@ -121,6 +125,19 @@ export function AppShell() {
     setCreateMenu((value) => !value);
   }
 
+  function onKeyboard(key) {
+    if (key === "shift") {
+      setShift((value) => !value);
+      return;
+    }
+    if (key === "layout") {
+      setLayout((value) => toggleLayout(value));
+      return;
+    }
+    setQuery((value) => applyKey(value, key, shift));
+    setShift(false);
+  }
+
   function onVoice() {
     const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Recognition) {
@@ -195,18 +212,69 @@ export function AppShell() {
                   <Glyph d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                 </button>
               ) : null}
-              <input
-                className="search__input"
-                type="search"
-                aria-label="Поиск"
-                placeholder="Поиск"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-              />
+              <div className="search__field">
+                <input
+                  className="search__input"
+                  type="search"
+                  aria-label="Поиск"
+                  placeholder="Поиск"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                <div className="search__tools">
+                  <button
+                    type="button"
+                    className="search__tool"
+                    aria-label="Клавиатура"
+                    aria-expanded={keyboard}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => setKeyboard((value) => !value)}
+                  >
+                    <Glyph d="M4 6h16a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm1 3v2h2V9H5zm4 0v2h2V9H9zm4 0v2h2V9h-2zm4 0v2h2V9h-2zM5 13v2h4v-2H5zm6 0v2h8v-2h-8z" />
+                  </button>
+                  {query ? (
+                    <button
+                      type="button"
+                      className="search__tool"
+                      aria-label="Очистить поле поиска"
+                      onClick={() => setQuery("")}
+                    >
+                      <Glyph d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z" />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
               <button className="search__button" type="submit" aria-label="Искать">
                 <Glyph d={PATHS.search} />
               </button>
             </form>
+          ) : null}
+          {keyboard && chrome.showSearchForm ? (
+            <div className="osk" role="dialog" aria-label={layout === "ru" ? "Русская клавиатура" : "English"}>
+              <div className="osk__head">
+                <span>{layout === "ru" ? "Русская клавиатура" : "English"}</span>
+                <button type="button" aria-label="Закрыть" onClick={() => setKeyboard(false)}>
+                  <Glyph d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3 1.4 1.4z" />
+                </button>
+              </div>
+              {keyboardRows(layout).map((row, index) => (
+                <div className="osk__row" key={index}>
+                  {row.map((key, keyIndex) => (
+                    <button
+                      key={`${key}-${keyIndex}`}
+                      type="button"
+                      className={key === " " ? "osk__key osk__key--space" : key === "shift" || key === "backspace" || key === "layout" ? "osk__key osk__key--wide" : "osk__key"}
+                      aria-label={key === " " ? "Пробел" : key === "backspace" ? "Стереть" : key === "shift" ? "Shift" : key === "layout" ? "Ctrl + Alt" : undefined}
+                      aria-pressed={key === "shift" ? shift : undefined}
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={() => onKeyboard(key)}
+                    >
+                      {keyLabel(key, shift)}
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
           ) : null}
           <button type="button" className="icon-button mic" aria-label="Голосовой поиск" onClick={onVoice}>
             <Glyph d={PATHS.mic} />
