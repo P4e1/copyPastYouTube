@@ -113,10 +113,28 @@ def _set_role(user_id: str, role: str) -> None:
         )
 
 
+def _mark_uploading(video_id: str) -> None:
+    from sqlalchemy import text
+
+    from app.infrastructure import db
+
+    with db._engine.begin() as connection:
+        connection.execute(
+            text("update videos set status = 'uploading' where id = :video_id"),
+            {"video_id": video_id},
+        )
+
+
 def _ensure_video(app, owner, title: str, visibility: str, grant_user_ids: list[str], color: str) -> str:
     channel = app.state.channel_card(owner.channel_id, owner.id)
     existing = next((item.id for item in channel.videos if item.title == title), None)
     if existing:
+        card = app.state.get_video(existing, owner.id)
+        if app.state.object_storage.inspect(card.object_key) is None:
+            app.state.object_storage.put_bytes(card.object_key, _mp4(color), "video/mp4")
+            if card.status != "uploading":
+                _mark_uploading(card.id)
+            app.state.complete_upload(card.id, owner.id)
         return existing
     card, _upload_url = app.state.create_video(
         channel_id=owner.channel_id,

@@ -32,6 +32,22 @@ def test_backend_root_finds_app_package(tmp_path):
     assert backend_root([tmp_path / "missing", container]) == container
 
 
+def test_seed_restores_demo_file_when_object_is_missing(client, app):
+    _ensure_ffmpeg()
+    from scripts.seed import _ensure_user, _ensure_video
+
+    owner = _ensure_user(app, "author1@demo.local", "author-one", "user")
+    video_id = _ensure_video(app, owner, "Утро на канале", "public", [], "red")
+    login = client.post("/auth/login", json={"email": "author1@demo.local", "password": "demo-pass"})
+    headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    card = client.get(f"/videos/{video_id}", headers=headers).json()
+    app.state.object_storage._objects.pop(card["object_key"], None)
+
+    _ensure_video(app, owner, "Утро на канале", "public", [], "red")
+
+    assert app.state.object_storage.inspect(card["object_key"]) is not None
+
+
 def test_seed_rewrites_demo_password(client, app):
     from sqlalchemy import text
 
