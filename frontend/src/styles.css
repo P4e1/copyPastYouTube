@@ -1198,11 +1198,96 @@ svg {
   padding-bottom: 8px;
 }
 
+.channel-about {
+  margin: 8px 0 0;
+  max-width: 640px;
+  color: #0f0f0f;
+}
+
+.channel-about button {
+  margin-left: 6px;
+  border: 0;
+  background: transparent;
+  color: #606060;
+  font-weight: 500;
+}
+
 .channel-tabs {
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin: 20px 0;
+  margin: 20px 0 12px;
   border-bottom: 1px solid #e5e5e5;
+}
+
+.channel-search {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+}
+
+.channel-search__input {
+  display: block;
+  width: min(100%, 280px);
+  height: 36px;
+  margin: 0 0 16px auto;
+  border: 0;
+  border-bottom: 1px solid #0f0f0f;
+  background: transparent;
+}
+
+.channel-sort {
+  height: 36px;
+  margin: 0 0 16px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #f2f2f2;
+}
+
+.video-card--dense .video-card__body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.playlist-grid,
+.channel-shelf__row .playlist-card {
+  text-align: left;
+}
+
+.playlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.playlist-card {
+  display: block;
+  width: 180px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+.playlist-grid .playlist-card {
+  width: auto;
+}
+
+.playlist-card h3 {
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.playlist-card p {
+  margin: 4px 0 0;
+  color: #606060;
 }
 
 .channel-tab {

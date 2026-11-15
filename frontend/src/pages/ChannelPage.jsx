@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
+import { channelHandle, filterByTitle, sortChannelVideos } from "../channel";
 import { VideoCard } from "../components/VideoCard";
 import { formatSubscribers, formatVideoCount } from "../format";
 import { useSession } from "../session";
@@ -17,11 +18,19 @@ export function ChannelPage() {
   const [missing, setMissing] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [pickedVideo, setPickedVideo] = useState("");
+  const [sort, setSort] = useState("latest");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [openPlaylist, setOpenPlaylist] = useState("");
 
   useEffect(() => {
     let active = true;
     setMissing(false);
     setChannel(null);
+    setQuery("");
+    setAboutOpen(false);
+    setOpenPlaylist("");
     api(`/channels/${channelId}`)
       .then(async (card) => {
         const [loadedVideos, loadedPlaylists] = await Promise.all([
@@ -121,7 +130,12 @@ export function ChannelPage() {
   const isOwner = account?.channel_id === channel.id;
   const ownVideos = videos.filter((video) => video.status !== "hidden");
   const letter = channel.name.slice(0, 1).toUpperCase();
-  const latest = videos.slice(0, 8);
+  const latest = sortChannelVideos(videos, "latest").slice(0, 8);
+  const popular = sortChannelVideos(videos, "popular").slice(0, 8);
+  const ordered = sortChannelVideos(videos, sort);
+  const found = filterByTitle(ordered, query);
+  const about = channel.description || "";
+  const aboutLong = about.length > 80;
 
   return (
     <section className="channel">
@@ -133,8 +147,19 @@ export function ChannelPage() {
         <div className="channel-identity">
           <h1>{channel.name}</h1>
           <p>
-            {formatSubscribers(channel.subscriber_count)} • {formatVideoCount(channel.videos.length)}
+            {channelHandle(channel.name)} • {formatSubscribers(channel.subscriber_count)} •{" "}
+            {formatVideoCount(channel.videos.length)}
           </p>
+          {about ? (
+            <p className="channel-about">
+              {aboutOpen || !aboutLong ? about : `${about.slice(0, 80)}…`}
+              {aboutLong ? (
+                <button type="button" className="description__more" onClick={() => setAboutOpen((value) => !value)}>
+                  {aboutOpen ? "Свернуть" : "ещё"}
+                </button>
+              ) : null}
+            </p>
+          ) : null}
           {isOwner ? (
             <Link className="subscribe" to="/upload">
               Управление видео
@@ -167,8 +192,38 @@ export function ChannelPage() {
         <button type="button" role="tab" aria-selected={tab === "playlists"} className={tab === "playlists" ? "channel-tab channel-tab--on" : "channel-tab"} onClick={() => setTab("playlists")}>
           Плейлисты
         </button>
+        <button
+          type="button"
+          className="channel-search"
+          aria-label="Поиск"
+          aria-expanded={searchOpen}
+          onClick={() => setSearchOpen((value) => !value)}
+        >
+          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+            <path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 5 1.5-1.5-5-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+          </svg>
+        </button>
       </div>
-      {tab === "home" ? (
+      {searchOpen ? (
+        <input
+          className="channel-search__input"
+          aria-label="Поиск по каналу"
+          placeholder="Поиск"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+      ) : null}
+      {query.trim() ? (
+        found.length === 0 ? (
+          <p className="channel-empty">Ничего не найдено</p>
+        ) : (
+          <div className="video-grid">
+            {found.map((video) => (
+              <VideoCard key={video.id} video={video} dense />
+            ))}
+          </div>
+        )
+      ) : tab === "home" ? (
         <div className="channel-home">
           <section className="channel-shelf">
             <div className="channel-shelf__head">
@@ -182,11 +237,32 @@ export function ChannelPage() {
             ) : (
               <div className="channel-shelf__row">
                 {latest.map((video) => (
-                  <VideoCard key={video.id} video={video} />
+                  <VideoCard key={video.id} video={video} dense />
                 ))}
               </div>
             )}
           </section>
+          {popular.length > 1 ? (
+            <section className="channel-shelf">
+              <div className="channel-shelf__head">
+                <h2>Популярные видео</h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSort("popular");
+                    setTab("videos");
+                  }}
+                >
+                  Все
+                </button>
+              </div>
+              <div className="channel-shelf__row">
+                {popular.map((video) => (
+                  <VideoCard key={video.id} video={video} dense />
+                ))}
+              </div>
+            </section>
+          ) : null}
           {playlists.length > 0 ? (
             <section className="channel-shelf">
               <div className="channel-shelf__head">
@@ -195,33 +271,54 @@ export function ChannelPage() {
                   Все
                 </button>
               </div>
-              <ul className="playlist-list">
+              <div className="channel-shelf__row">
                 {playlists.map((playlist) => (
-                  <li key={playlist.id}>
-                    <button type="button" className="channel-shelf__playlist" onClick={() => setTab("playlists")}>
-                      {playlist.title}
-                    </button>
-                  </li>
+                  <PlaylistCard
+                    key={playlist.id}
+                    playlist={playlist}
+                    cover={playlistCover(playlist, videos)}
+                    onOpen={() => {
+                      setOpenPlaylist(playlist.id);
+                      setTab("playlists");
+                    }}
+                  />
                 ))}
-              </ul>
+              </div>
             </section>
           ) : null}
         </div>
       ) : null}
-      {tab === "shorts" ? <p className="channel-empty">Смотреть пока нечего</p> : null}
-      {tab === "videos" ? (
+      {!query.trim() && tab === "shorts" ? <p className="channel-empty">Смотреть пока нечего</p> : null}
+      {!query.trim() && tab === "videos" ? (
         videos.length === 0 ? (
           <p className="channel-empty">Видео пока нет</p>
         ) : (
-          <div className="video-grid">
-            {videos.map((video) => (
-              <VideoCard key={video.id} video={video} />
-            ))}
-          </div>
+          <>
+            <select className="channel-sort" aria-label="Сортировка" value={sort} onChange={(event) => setSort(event.target.value)}>
+              <option value="latest">Последние</option>
+              <option value="popular">Популярные</option>
+              <option value="oldest">Старые</option>
+            </select>
+            <div className="video-grid">
+              {ordered.map((video) => (
+                <VideoCard key={video.id} video={video} dense />
+              ))}
+            </div>
+          </>
         )
       ) : null}
-      {tab === "playlists" ? (
+      {!query.trim() && tab === "playlists" ? (
         <div className="playlist-panel">
+          <div className="playlist-grid">
+            {playlists.map((playlist) => (
+              <PlaylistCard
+                key={playlist.id}
+                playlist={playlist}
+                cover={playlistCover(playlist, videos)}
+                onOpen={() => setOpenPlaylist((current) => (current === playlist.id ? "" : playlist.id))}
+              />
+            ))}
+          </div>
           {isOwner ? (
             <form className="playlist-form" onSubmit={createPlaylist}>
               <input
@@ -242,7 +339,7 @@ export function ChannelPage() {
           ) : null}
           {playlists.length === 0 ? <p className="channel-empty">Плейлистов пока нет</p> : null}
           <ul className="playlist-list">
-            {playlists.map((playlist) => (
+            {(openPlaylist ? playlists.filter((playlist) => playlist.id === openPlaylist) : playlists).map((playlist) => (
               <li key={playlist.id} className="playlist">
                 <h2>{playlist.title}</h2>
                 <ol>
@@ -261,6 +358,24 @@ export function ChannelPage() {
         </div>
       ) : null}
     </section>
+  );
+}
+
+function playlistCover(playlist, videos) {
+  const first = [...playlist.items].sort((left, right) => left.position - right.position)[0];
+  if (!first) {
+    return null;
+  }
+  return videos.find((video) => video.id === first.video_id)?.thumbnail_url || null;
+}
+
+function PlaylistCard({ playlist, cover, onOpen }) {
+  return (
+    <button type="button" className="playlist-card" onClick={onOpen}>
+      <div className="thumb">{cover ? <img src={cover} alt="" /> : <div className="thumb__empty" />}</div>
+      <h3>{playlist.title}</h3>
+      <p>{formatVideoCount(playlist.items.length)}</p>
+    </button>
   );
 }
 
