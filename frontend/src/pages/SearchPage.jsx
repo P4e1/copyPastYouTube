@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
-import { formatViews } from "../format";
+import { formatAgo, formatDuration, formatViewLine } from "../format";
 
 export function SearchPage() {
   const [params] = useSearchParams();
@@ -56,11 +56,12 @@ export function SearchPage() {
           <Link className="search-row" to={`/watch/${video.id}`}>
             <div className="thumb thumb--row">
               {video.thumbnail_url ? <img src={video.thumbnail_url} alt="" /> : <div className="thumb__empty" />}
+              <span className="thumb__time">{formatDuration(video.duration_sec)}</span>
             </div>
             <div>
               <h2>{video.title}</h2>
               <p>
-                {video.channel_name} • {formatViews(video.view_count)}
+                {video.channel_name} • {formatViewLine(video.view_count)} • {formatAgo(video.created_at)}
               </p>
               <p className="search-row__desc">{video.description}</p>
             </div>

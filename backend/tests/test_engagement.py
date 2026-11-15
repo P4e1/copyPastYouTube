@@ -101,6 +101,33 @@ def test_repeat_like_updates_value_without_second_row(client):
     assert _like_rows(video_id, owner["user_id"]) == [-1]
 
 
+def test_guest_reads_public_comments_and_not_private(client):
+    owner = _auth(client)
+    public_id = _video(client, owner["headers"])
+    private_id = _video(client, owner["headers"], visibility="private", title="Закрытый")
+    _set_status(public_id, "ready")
+    _set_status(private_id, "ready")
+    created = client.post(
+        f"/videos/{public_id}/comments",
+        json={"body": "Видно всем"},
+        headers=owner["headers"],
+    )
+    assert created.status_code == 201
+    private_comment = client.post(
+        f"/videos/{private_id}/comments",
+        json={"body": "Секрет"},
+        headers=owner["headers"],
+    )
+    assert private_comment.status_code == 201
+
+    public_list = client.get(f"/videos/{public_id}/comments")
+    private_list = client.get(f"/videos/{private_id}/comments")
+
+    assert public_list.status_code == 200
+    assert public_list.json()["items"][0]["body"] == "Видно всем"
+    assert private_list.status_code == 404
+
+
 def test_comment_is_listed_and_reply_keeps_parent(client):
     owner = _auth(client)
     video_id = _video(client, owner["headers"])

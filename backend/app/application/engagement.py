@@ -105,7 +105,7 @@ def add_comment(
     )
 
 
-def list_comments(videos, engagement: EngagementRepository, video_id: str, viewer_id: str) -> list[Comment]:
+def list_comments(videos, engagement: EngagementRepository, video_id: str, viewer_id: str | None) -> list[Comment]:
     _require_ready(videos, video_id, viewer_id)
     return engagement.list_comments(video_id)
 

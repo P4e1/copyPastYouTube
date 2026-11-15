@@ -94,8 +94,15 @@ def like_video(video_id: str, body: LikeIn, request: Request) -> LikeOut:
 
 @router.get("/videos/{video_id}/comments", response_model=CommentListOut)
 def get_comments(video_id: str, request: Request) -> CommentListOut:
-    account = _account(request)
-    comments = request.app.state.comments_for_video(video_id, account.id)
+    header = request.headers.get("authorization", "")
+    scheme, _, token = header.partition(" ")
+    viewer_id = None
+    if scheme.lower() == "bearer" and token.strip():
+        try:
+            viewer_id = request.app.state.account_by_token(token.strip()).id
+        except InvalidCredentialsError as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+    comments = request.app.state.comments_for_video(video_id, viewer_id)
     return CommentListOut(items=[_comment_out(comment) for comment in comments])
 
 

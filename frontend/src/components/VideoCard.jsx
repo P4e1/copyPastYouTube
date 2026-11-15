@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 
-import { formatDate, formatDuration, formatViews } from "../format";
+import { formatAgo, formatDuration, formatViewLine } from "../format";
 
 export function VideoCard({ video }) {
   const letter = (video.channel_name || "?").slice(0, 1).toUpperCase();
@@ -20,7 +20,7 @@ export function VideoCard({ video }) {
           <p className="video-card__meta">
             {video.channel_name}
             <br />
-            {formatViews(video.view_count)} • {formatDate(video.created_at)}
+            {formatViewLine(video.view_count)} • {formatAgo(video.created_at)}
           </p>
         </div>
       </div>

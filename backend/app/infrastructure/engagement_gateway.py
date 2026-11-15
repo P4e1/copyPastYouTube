@@ -61,7 +61,7 @@ def publish_comment(video_id: str, user_id: str, body: str, parent_id: str | Non
         )
 
 
-def comments_for_video(video_id: str, viewer_id: str) -> list[Comment]:
+def comments_for_video(video_id: str, viewer_id: str | None) -> list[Comment]:
     with _session_scope() as session:
         return list_comments(SqlVideoRepository(session), SqlEngagementRepository(session), video_id, viewer_id)
 
