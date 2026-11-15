@@ -21,6 +21,17 @@ def _ensure_ffmpeg():
     assert shutil.which("ffmpeg"), "Для сида нужен ffmpeg в PATH"
 
 
+def test_backend_root_finds_app_package(tmp_path):
+    from scripts.seed import backend_root
+
+    repo = tmp_path / "backend"
+    (repo / "app").mkdir(parents=True)
+    container = tmp_path / "container"
+    (container / "app").mkdir(parents=True)
+    assert backend_root([repo, container]) == repo
+    assert backend_root([tmp_path / "missing", container]) == container
+
+
 def test_seed_rewrites_demo_password(client, app):
     from sqlalchemy import text
 

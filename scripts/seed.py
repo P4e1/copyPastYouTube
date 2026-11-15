@@ -5,8 +5,24 @@
 """
 
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
+
+
+def backend_root(candidates: list[Path] | None = None) -> Path:
+    if candidates is None:
+        here = Path(__file__).resolve()
+        candidates = [here.parents[1] / "backend", Path("/app")]
+    for path in candidates:
+        if (path / "app").is_dir():
+            return path
+    return candidates[0]
+
+
+_root = str(backend_root())
+if _root not in sys.path:
+    sys.path.insert(0, _root)
 
 from app.domain.auth import EmailTakenError, InvalidCredentialsError
 from app.domain.errors import NotFoundError
