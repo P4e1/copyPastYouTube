@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useNavigate, useSearchParams } from "react-router-dom";
 
+import { channelHandle } from "../channel";
+import { SHORTCUTS, THEME_OPTIONS, headerChrome, themeLabel, voiceQueryPath } from "../settings";
+import { useSettings } from "../settings-context";
 import { useSession } from "../session";
 
 const NARROW = "(max-width: 791px)";
@@ -18,9 +21,9 @@ const PATHS = {
   history:
     "M8.76 1.487a11 11 0 11-7.54 12.706 1 1 0 011.96-.4 9 9 0 0014.254 5.38A9 9 0 0016.79 4.38 9 9 0 004.518 7H7a1 1 0 010 2H1V3a1 1 0 012 0v2.678a11 11 0 015.76-4.192ZM12 6a1 1 0 00-1 1v5.58l.504.288 3.5 2a1 1 0 10.992-1.736L13 11.42V7a1 1 0 00-1-1Z",
   shield: "M12 2 4 5v6c0 5.25 3.4 8.74 8 10 4.6-1.26 8-4.75 8-10V5l-8-3Zm0 2.18 6 2.25V11c0 4.16-2.62 7.12-6 8.22C8.62 18.12 6 15.16 6 11V6.43l6-2.25Z",
-  create:
-    "M14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2zm5-7H5a2 2 0 00-2 2v8a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2zM5 8h14v8H5V8z",
+  create: "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z",
   bell: "M12 22a2.5 2.5 0 002.45-2h-4.9A2.5 2.5 0 0012 22zm7-6v-5a6.7 6.7 0 00-5-6.46V4a2 2 0 10-4 0v.54A6.7 6.7 0 005 11v5l-1.7 1.7A1 1 0 004 20h16a1 1 0 00.7-1.7L19 16z",
+  gear: "M19.4 13a7.7 7.7 0 000-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 00-1.7-1L15 3h-4l-.3 2.9a7.4 7.4 0 00-1.7 1l-2.4-1-2 3.4L6.6 11a7.7 7.7 0 000 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 001.7 1L11 21h4l.3-2.9a7.4 7.4 0 001.7-1l2.4 1 2-3.4-2-1.7zM13 15.5A3.5 3.5 0 1113 8a3.5 3.5 0 010 7.5z",
 };
 
 export function AppShell() {
@@ -28,10 +31,17 @@ export function AppShell() {
   const [params] = useSearchParams();
   const [query, setQuery] = useState(params.get("q") || "");
   const { token, account, logout } = useSession();
+  const { settings, updateSettings } = useSettings();
   const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW).matches);
   const [open, setOpen] = useState(() => !window.matchMedia(NARROW).matches);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [menu, setMenu] = useState(false);
+  const [panel, setPanel] = useState("main");
   const [createMenu, setCreateMenu] = useState(false);
+  const [notify, setNotify] = useState(false);
+  const [voice, setVoice] = useState("");
+  const [keys, setKeys] = useState(false);
+  const voiceRef = useRef(null);
 
   useEffect(() => {
     const query = window.matchMedia(NARROW);
@@ -55,17 +65,21 @@ export function AppShell() {
   }
 
   useEffect(() => {
-    if (!createMenu) {
+    if (!createMenu && !menu && !notify) {
       return undefined;
     }
     function onPointer(event) {
-      if (!event.target.closest(".create-wrap")) {
-        setCreateMenu(false);
+      if (event.target.closest(".topbar__end")) {
+        return;
       }
+      setCreateMenu(false);
+      setMenu(false);
+      setPanel("main");
+      setNotify(false);
     }
     document.addEventListener("mousedown", onPointer);
     return () => document.removeEventListener("mousedown", onPointer);
-  }, [createMenu]);
+  }, [createMenu, menu, notify]);
 
   function onCreate() {
     if (!token) {
@@ -73,7 +87,33 @@ export function AppShell() {
       return;
     }
     setMenu(false);
+    setNotify(false);
     setCreateMenu((value) => !value);
+  }
+
+  function onVoice() {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      setVoice("Голосовой поиск недоступен в этом браузере.");
+      return;
+    }
+    const recognition = new Recognition();
+    voiceRef.current = recognition;
+    recognition.lang = "ru-RU";
+    recognition.onresult = (event) => {
+      const path = voiceQueryPath(event.results?.[0]?.[0]?.transcript);
+      setVoice("");
+      if (path) {
+        navigate(path);
+      }
+    };
+    recognition.onerror = () => setVoice("Голосовой поиск недоступен в этом браузере.");
+    setVoice("Слушаю…");
+    try {
+      recognition.start();
+    } catch {
+      setVoice("Голосовой поиск недоступен в этом браузере.");
+    }
   }
 
   function onLogout() {
@@ -84,46 +124,61 @@ export function AppShell() {
 
   const letter = (account?.username || account?.email || "?").slice(0, 1).toUpperCase();
   const canModerate = account?.role === "moderator" || account?.role === "admin";
+  const chrome = headerChrome({ narrow, searchOpen });
+  const channelTo = account?.channel_id ? `/channel/${account.channel_id}` : "/you";
 
   return (
     <div className={open ? "shell shell--nav-open" : "shell"}>
-      <header className="topbar">
+      <header className={narrow && searchOpen ? "topbar topbar--search" : "topbar"}>
         <div className="topbar__start">
           <button
             type="button"
             className="icon-button"
-            aria-label="Меню"
+            aria-label="Гид"
             aria-expanded={open}
             onClick={() => setOpen((value) => !value)}
           >
             <Glyph d={PATHS.menu} />
           </button>
-          <Link className="logo" to="/" aria-label="YouTube, на главную">
+          <Link className="logo" to="/" aria-label="Главная страница YouTube">
             <Logo />
+            <span className="logo__region">RU</span>
           </Link>
         </div>
         <div className="topbar__center">
-          <form
-            className="search"
-            role="search"
-            onSubmit={(event) => {
-              event.preventDefault();
-              navigate(`/search?q=${encodeURIComponent(query.trim())}`);
-            }}
-          >
-            <input
-              className="search__input"
-              type="search"
-              aria-label="Поиск"
-              placeholder="Поиск"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-            <button className="search__button" type="submit" aria-label="Искать">
+          {chrome.showSearchButton ? (
+            <button type="button" className="icon-button" aria-label="Поиск" onClick={() => setSearchOpen(true)}>
               <Glyph d={PATHS.search} />
             </button>
-          </form>
-          <button type="button" className="icon-button mic" aria-label="Голосовой поиск">
+          ) : null}
+          {chrome.showSearchForm ? (
+            <form
+              className="search"
+              role="search"
+              onSubmit={(event) => {
+                event.preventDefault();
+                navigate(`/search?q=${encodeURIComponent(query.trim())}`);
+              }}
+            >
+              {narrow ? (
+                <button type="button" className="search__back" aria-label="Назад" onClick={() => setSearchOpen(false)}>
+                  <Glyph d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+                </button>
+              ) : null}
+              <input
+                className="search__input"
+                type="search"
+                aria-label="Поиск"
+                placeholder="Поиск"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+              <button className="search__button" type="submit" aria-label="Искать">
+                <Glyph d={PATHS.search} />
+              </button>
+            </form>
+          ) : null}
+          <button type="button" className="icon-button mic" aria-label="Голосовой поиск" onClick={onVoice}>
             <Glyph d={PATHS.mic} />
           </button>
         </div>
@@ -150,24 +205,112 @@ export function AppShell() {
           </div>
           {token ? (
             <>
-              <button type="button" className="icon-button" aria-label="Уведомления">
-                <Glyph d={PATHS.bell} />
-              </button>
+              <div className="notify-wrap">
+                <button
+                  type="button"
+                  className="icon-button"
+                  aria-label="Уведомления"
+                  aria-expanded={notify}
+                  onClick={() => {
+                    setCreateMenu(false);
+                    setMenu(false);
+                    setNotify((value) => !value);
+                  }}
+                >
+                  <Glyph d={PATHS.bell} />
+                </button>
+                {notify ? (
+                  <div className="notify-panel" role="dialog" aria-label="Уведомления">
+                    <div className="notify-panel__head">
+                      <h2>Уведомления</h2>
+                      <Link to="/account/notifications" aria-label="Настройки" onClick={() => setNotify(false)}>
+                        <Glyph d={PATHS.gear} />
+                      </Link>
+                    </div>
+                    <p>Здесь пока ничего нет</p>
+                    <p>Подписывайтесь на каналы, чтобы получать уведомления о новых видео.</p>
+                  </div>
+                ) : null}
+              </div>
               <div className="avatar-wrap">
                 <button
                   type="button"
                   className="avatar"
-                  aria-label="Аккаунт"
+                  aria-label="Меню аккаунта"
                   aria-expanded={menu}
-                  onClick={() => setMenu((value) => !value)}
+                  onClick={() => {
+                    setCreateMenu(false);
+                    setNotify(false);
+                    setMenu((value) => !value);
+                    setPanel("main");
+                  }}
                 >
                   {letter}
                 </button>
                 {menu ? (
-                  <div className="account-menu">
-                    <button type="button" onClick={onLogout}>
-                      Выйти
-                    </button>
+                  <div className="account-menu" role="menu">
+                    {panel === "theme" ? (
+                      <>
+                        <button type="button" onClick={() => setPanel("main")}>
+                          Назад
+                        </button>
+                        {THEME_OPTIONS.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            role="menuitemradio"
+                            aria-checked={settings.theme === option.id}
+                            onClick={() => updateSettings({ theme: option.id })}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </>
+                    ) : (
+                      <>
+                        <div className="account-menu__head">
+                          <span className="avatar" aria-hidden="true">
+                            {letter}
+                          </span>
+                          <span>
+                            <strong>{account?.username || account?.email}</strong>
+                            <span className="account-menu__muted">{channelHandle(account?.username || account?.email)}</span>
+                          </span>
+                        </div>
+                        <Link role="menuitem" to={channelTo} onClick={() => setMenu(false)}>
+                          Посмотреть канал
+                        </Link>
+                        <button type="button" role="menuitem" onClick={onLogout}>
+                          Выйти
+                        </button>
+                        <button type="button" role="menuitem" onClick={() => setPanel("theme")}>
+                          Тема: {themeLabel(settings.theme)}
+                        </button>
+                        <p className="account-menu__note">Язык интерфейса: Русский</p>
+                        <button
+                          type="button"
+                          role="menuitemcheckbox"
+                          aria-checked={settings.restricted}
+                          onClick={() => updateSettings({ restricted: !settings.restricted })}
+                        >
+                          Безопасный режим: {settings.restricted ? "вкл." : "откл."}
+                        </button>
+                        <p className="account-menu__note">Страна: Россия</p>
+                        <button
+                          type="button"
+                          role="menuitem"
+                          onClick={() => {
+                            setMenu(false);
+                            setKeys(true);
+                          }}
+                        >
+                          Быстрые клавиши
+                        </button>
+                        <Link role="menuitem" to="/account" onClick={() => setMenu(false)}>
+                          Настройки
+                        </Link>
+                      </>
+                    )}
                   </div>
                 ) : null}
               </div>
@@ -181,7 +324,41 @@ export function AppShell() {
         </div>
       </header>
       {narrow && open ? (
-        <button type="button" className="backdrop" aria-label="Закрыть меню" onClick={() => setOpen(false)} />
+        <button type="button" className="backdrop" aria-label="Закрыть гид" onClick={() => setOpen(false)} />
+      ) : null}
+      {voice ? (
+        <div className="dialog" role="dialog" aria-label="Голосовой поиск">
+          <div className="dialog__card">
+            <p>{voice}</p>
+            <button
+              type="button"
+              onClick={() => {
+                voiceRef.current?.abort?.();
+                setVoice("");
+              }}
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {keys ? (
+        <div className="dialog" role="dialog" aria-label="Быстрые клавиши">
+          <div className="dialog__card">
+            <h2>Быстрые клавиши</h2>
+            <ul>
+              {SHORTCUTS.map(([key, action]) => (
+                <li key={key}>
+                  <span>{key}</span>
+                  <span>{action}</span>
+                </li>
+              ))}
+            </ul>
+            <button type="button" onClick={() => setKeys(false)}>
+              Закрыть
+            </button>
+          </div>
+        </div>
       ) : null}
       <div className="shell__body">
         <nav className="sidebar" aria-label="Разделы">

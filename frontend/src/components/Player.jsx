@@ -8,6 +8,7 @@ import {
   rateLabel,
   seekToRatio,
 } from "../player";
+import { useSettings } from "../settings-context";
 
 const ICONS = {
   play: "M8 5v14l11-7z",
@@ -40,8 +41,13 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const [chrome, setChrome] = useState(true);
   const [remaining, setRemaining] = useState(false);
   const [full, setFull] = useState(false);
-  const [autoplay, setAutoplay] = useState(false);
+  const { settings, updateSettings } = useSettings();
+  const [autoplay, setAutoplay] = useState(settings.autoplayNext);
   const [nudge, setNudge] = useState("");
+
+  useEffect(() => {
+    setAutoplay(settings.autoplayNext);
+  }, [settings.autoplayNext]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -330,7 +336,11 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
               className={autoplay ? "yt-player__btn yt-player__btn--on" : "yt-player__btn"}
               aria-label={autoplay ? "Автовоспроизведение включено" : "Автовоспроизведение выключено"}
               aria-pressed={autoplay}
-              onClick={() => setAutoplay((value) => !value)}
+              onClick={() => {
+                const next = !autoplay;
+                setAutoplay(next);
+                updateSettings({ autoplayNext: next });
+              }}
             >
               <Glyph d={ICONS.play} />
             </button>

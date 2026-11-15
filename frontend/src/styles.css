@@ -93,11 +93,22 @@ svg {
 }
 
 .logo {
+  position: relative;
   display: flex;
   align-items: center;
   height: 40px;
-  padding: 0 8px;
+  padding: 0 14px 0 8px;
   text-decoration: none;
+}
+
+.logo__region {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  color: #606060;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
 }
 
 .logo__svg {
@@ -161,8 +172,8 @@ svg {
 }
 
 .chip {
-  border: 1px solid #d3d3d3;
-  background: #fff;
+  border: 0;
+  background: #f2f2f2;
   color: #0f0f0f;
 }
 
@@ -227,19 +238,231 @@ svg {
   position: absolute;
   top: 44px;
   right: 0;
-  min-width: 160px;
+  z-index: 30;
+  width: 300px;
+  max-height: calc(100vh - 72px);
+  overflow: auto;
   padding: 8px 0;
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
 }
 
+.account-menu__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 12px;
+}
+
+.account-menu__head strong,
+.account-menu__muted,
+.account-menu__note {
+  display: block;
+}
+
+.account-menu__muted,
+.account-menu__note {
+  color: #606060;
+  font-size: 12px;
+}
+
+.account-menu__note {
+  margin: 0;
+  padding: 10px 16px;
+}
+
+.account-menu a,
 .account-menu button {
+  display: flex;
   width: 100%;
   padding: 10px 16px;
   border: 0;
   background: transparent;
   text-align: left;
+  text-decoration: none;
+}
+
+.account-menu a:hover,
+.account-menu button:hover {
+  background: #f2f2f2;
+}
+
+.search__back + .search__input {
+  border-left: 0;
+  border-radius: 0;
+}
+
+.notify-wrap {
+  position: relative;
+}
+
+.notify-panel {
+  position: absolute;
+  top: 48px;
+  right: 0;
+  z-index: 30;
+  width: min(420px, 80vw);
+  min-height: 280px;
+  padding: 8px 16px 24px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.18);
+}
+
+.notify-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notify-panel h2 {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+.notify-panel p {
+  margin: 8px 0;
+  color: #606060;
+}
+
+.notify-panel a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: inherit;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.dialog__card {
+  width: min(420px, 92vw);
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.dialog__card h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+.dialog__card > button {
+  height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 18px;
+  background: #f2f2f2;
+}
+
+.dialog__card ul {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+}
+
+.dialog__card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.search__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #d3d3d3;
+  border-right: 0;
+  border-radius: 40px 0 0 40px;
+  background: #fff;
+}
+
+.topbar--search {
+  grid-template-columns: 1fr;
+}
+
+.topbar--search .topbar__start,
+.topbar--search .topbar__end,
+.topbar--search .mic {
+  display: none;
+}
+
+.topbar--search .search {
+  width: 100%;
+}
+
+.settings h1 {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.settings__layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.settings__nav {
+  display: flex;
+  flex-direction: column;
+}
+
+.settings__nav a {
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+}
+
+.settings__nav a.active {
+  background: #e5e5e5;
+  font-weight: 500;
+}
+
+.settings__section h2 {
+  margin: 16px 0 8px;
+  font-size: 18px;
+}
+
+.settings__muted {
+  display: block;
+  color: #606060;
+  font-size: 12px;
+}
+
+.settings__line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.channel-mini {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  margin-top: 12px;
+  text-decoration: none;
 }
 
 .account-menu button:hover {
@@ -1569,4 +1792,75 @@ svg {
   .topbar {
     padding: 0 8px;
   }
+
+  .settings__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  background: #0f0f0f;
+  color: #f1f1f1;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .topbar,
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .content,
+html[data-theme="dark"] .account-menu,
+html[data-theme="dark"] .create-menu,
+html[data-theme="dark"] .notify-panel,
+html[data-theme="dark"] .dialog__card,
+html[data-theme="dark"] .search__input,
+html[data-theme="dark"] .search__back,
+html[data-theme="dark"] .auth,
+html[data-theme="dark"] .auth__card,
+html[data-theme="dark"] .empty,
+html[data-theme="dark"] .description,
+html[data-theme="dark"] .settings,
+html[data-theme="dark"] .watch-pop {
+  background: #0f0f0f;
+  color: #f1f1f1;
+}
+
+html[data-theme="dark"] .icon-button:hover,
+html[data-theme="dark"] .chip,
+html[data-theme="dark"] .chip:hover,
+html[data-theme="dark"] .mic,
+html[data-theme="dark"] .search__button,
+html[data-theme="dark"] .sidebar a.active,
+html[data-theme="dark"] .sidebar a:hover,
+html[data-theme="dark"] .account-menu a:hover,
+html[data-theme="dark"] .account-menu button:hover,
+html[data-theme="dark"] .create-menu a:hover,
+html[data-theme="dark"] .settings__nav a.active,
+html[data-theme="dark"] .description,
+html[data-theme="dark"] .subscribe--on {
+  background: #272727;
+  color: #f1f1f1;
+}
+
+html[data-theme="dark"] .search__input,
+html[data-theme="dark"] .search__button,
+html[data-theme="dark"] .search__back,
+html[data-theme="dark"] .signin,
+html[data-theme="dark"] .auth__card input {
+  border-color: #3f3f3f;
+  background: #0f0f0f;
+  color: #f1f1f1;
+}
+
+html[data-theme="dark"] .logo__svg {
+  fill: #fff;
+}
+
+html[data-theme="dark"] .logo__region,
+html[data-theme="dark"] .account-menu__muted,
+html[data-theme="dark"] .account-menu__note,
+html[data-theme="dark"] .notify-panel p,
+html[data-theme="dark"] .settings__muted,
+html[data-theme="dark"] .video-card__meta,
+html[data-theme="dark"] .watch__subs {
+  color: #aaa;
 }
