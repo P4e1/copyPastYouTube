@@ -92,7 +92,7 @@ class MinioObjectStorage:
 
     def allocate_upload(self, video_id: str) -> tuple[str, str]:
         key = f"videos/{video_id}/source.mp4"
-        url = self._public.presigned_put_object(self._bucket, key, expires=timedelta(minutes=15))
+        url = self._public.presigned_put_object(self._bucket, key, expires=timedelta(hours=12))
         return key, url
 
     def put_bytes(self, key: str, data: bytes, content_type: str) -> None:

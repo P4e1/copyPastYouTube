@@ -1,5 +1,7 @@
 """Внутренний адрес MinIO берётся по IPv4, подключение повторяется."""
 
+from datetime import timedelta
+
 from app.infrastructure.minio_storage import MinioObjectStorage, call_with_retry, ipv4_netloc
 
 
@@ -50,3 +52,20 @@ def test_presign_client_pins_region():
 
     assert seen["endpoint"] == "localhost:9000"
     assert seen["region"] == "us-east-1"
+
+
+def test_large_upload_url_outlives_a_short_signature():
+    seen = {}
+
+    class FakePublic:
+        def presigned_put_object(self, bucket, key, expires):
+            seen["expires"] = expires
+            return "http://localhost:8080/videos/" + key
+
+    storage = MinioObjectStorage.__new__(MinioObjectStorage)
+    storage._bucket = "videos"
+    storage._public = FakePublic()
+
+    storage.allocate_upload("video-1")
+
+    assert seen["expires"] >= timedelta(hours=2)

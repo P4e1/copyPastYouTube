@@ -8,6 +8,7 @@ import {
   rateLabel,
   seekToRatio,
 } from "../player";
+import { countdownLeft, END_COUNTDOWN_SECONDS, endScreen } from "../endscreen";
 import { useSettings } from "../settings-context";
 import { breakDue } from "../settings";
 
@@ -25,7 +26,7 @@ const ICONS = {
   captions: "M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zM7 15H5v-2h2v2zm0-4H5V9h2v2zm10 4h-6v-2h6v2zm0-4h-6V9h6v2z",
 };
 
-export function Player({ src, autoPlay = false, theater = false, onTheater, onAutoplayNext }) {
+export function Player({ src, autoPlay = false, theater = false, onTheater, onAutoplayNext, upNext = null }) {
   const rootRef = useRef(null);
   const videoRef = useRef(null);
   const barRef = useRef(null);
@@ -33,6 +34,8 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const clickTimer = useRef(0);
   const watchedRef = useRef(0);
   const lastMediaRef = useRef(0);
+  const nextRef = useRef(onAutoplayNext);
+  nextRef.current = onAutoplayNext;
   const { settings, updateSettings } = useSettings();
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
@@ -48,11 +51,37 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const [windowed, setWindowed] = useState(false);
   const [breakOpen, setBreakOpen] = useState(false);
   const [autoplay, setAutoplay] = useState(settings.autoplayNext);
+  const [ended, setEnded] = useState(false);
+  const [holdAutoplay, setHoldAutoplay] = useState(false);
+  const [countLeft, setCountLeft] = useState(END_COUNTDOWN_SECONDS);
   const [nudge, setNudge] = useState("");
+  const screen = endScreen({ ended, autoplay: autoplay && !holdAutoplay, hasNext: Boolean(upNext) });
 
   useEffect(() => {
     setAutoplay(settings.autoplayNext);
   }, [settings.autoplayNext]);
+
+  useEffect(() => {
+    setEnded(false);
+    setHoldAutoplay(false);
+    setCountLeft(END_COUNTDOWN_SECONDS);
+  }, [src]);
+
+  useEffect(() => {
+    if (screen !== "countdown") {
+      return undefined;
+    }
+    const started = Date.now();
+    const timer = window.setInterval(() => {
+      const left = countdownLeft(END_COUNTDOWN_SECONDS, (Date.now() - started) / 1000);
+      setCountLeft(left);
+      if (left === 0) {
+        window.clearInterval(timer);
+        nextRef.current?.();
+      }
+    }, 250);
+    return () => window.clearInterval(timer);
+  }, [screen]);
 
   useEffect(() => {
     setRate(settings.playbackRate);
@@ -209,7 +238,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   }
 
   function onSurfaceClick(event) {
-    if (event.target.closest(".yt-player__chrome, .yt-player__menu, .dialog")) {
+    if (event.target.closest(".yt-player__chrome, .yt-player__menu, .yt-player__end, .dialog")) {
       return;
     }
     if (clickTimer.current) {
@@ -224,7 +253,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   }
 
   function onSurfaceDoubleClick(event) {
-    if (event.target.closest(".yt-player__chrome, .yt-player__menu, .dialog")) {
+    if (event.target.closest(".yt-player__chrome, .yt-player__menu, .yt-player__end, .dialog")) {
       return;
     }
     window.clearTimeout(clickTimer.current);
@@ -265,10 +294,20 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
 
   function onEnded() {
     setPlaying(false);
-    setChrome(true);
-    if (autoplay) {
-      onAutoplayNext?.();
+    setChrome(false);
+    setEnded(true);
+    setCountLeft(END_COUNTDOWN_SECONDS);
+  }
+
+  function replay() {
+    const video = videoRef.current;
+    setEnded(false);
+    setHoldAutoplay(false);
+    if (!video) {
+      return;
     }
+    video.currentTime = 0;
+    video.play().catch(() => {});
   }
 
   const expanded = full || windowed;
@@ -276,7 +315,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const clock = remaining
     ? `-${formatPlayerClock(Math.max(0, duration - time))}`
     : `${formatPlayerClock(time)} / ${formatPlayerClock(duration)}`;
-  const shown = chrome || !playing || menu;
+  const shown = !ended && (chrome || !playing || menu);
 
   return (
     <div
@@ -306,6 +345,24 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
         onLoadedMetadata={sync}
         onEnded={onEnded}
       />
+      {screen === "hidden" ? null : (
+        <div className="yt-player__end">
+          <button type="button" className="yt-player__replay" aria-label="Повторить" onClick={replay}>
+            <Glyph d={ICONS.play} />
+          </button>
+          {screen === "countdown" && upNext ? (
+            <aside className="yt-end">
+              <p>Далее</p>
+              <strong>{upNext.title}</strong>
+              <span>{upNext.channel}</span>
+              <span className="yt-end__count">{countLeft}</span>
+              <button type="button" onClick={() => setHoldAutoplay(true)}>
+                Отмена
+              </button>
+            </aside>
+          ) : null}
+        </div>
+      )}
       {nudge ? <div className={nudge.startsWith("«") ? "yt-player__nudge yt-player__nudge--left" : "yt-player__nudge yt-player__nudge--right"}>{nudge}</div> : null}
       <div className="yt-player__chrome">
         <div

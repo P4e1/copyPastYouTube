@@ -5,6 +5,7 @@ import { api } from "../api/client";
 import { bellBadge, mutedChannelNames, readBells, readSeen, rememberSeen, unseenIds } from "../bell";
 import { channelHandle } from "../channel";
 import { guideItemActive, guideMode, guideYouLinks, visibleSubscriptions } from "../guide";
+import { moderationEntry } from "../moderation";
 import { progressPhase } from "../progress";
 import { applyKey, keyLabel, keyboardRows, toggleLayout } from "../keyboard";
 import { SHORTCUTS, THEME_OPTIONS, headerChrome, subscriptionNotices, themeLabel, voiceQueryPath } from "../settings";
@@ -479,6 +480,11 @@ export function AppShell() {
                         <Link role="menuitem" to="/account" onClick={() => setMenu(false)}>
                           Настройки
                         </Link>
+                        {moderationEntry(account?.role) === "shown" ? (
+                          <Link role="menuitem" to="/moderation" onClick={() => setMenu(false)}>
+                            Модерация
+                          </Link>
+                        ) : null}
                       </>
                     )}
                   </div>

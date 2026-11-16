@@ -122,6 +122,10 @@ def test_frontend_proxy_sends_browser_headers():
     assert "Content-Security-Policy" in text
     assert "fonts.googleapis.com" in text
     assert "fonts.gstatic.com" in text
+    videos = text.split("location /videos/", 1)[1]
+    assert "proxy_read_timeout 3600s" in videos
+    assert "proxy_send_timeout 3600s" in videos
+    assert "client_body_timeout 3600s" in videos
 
 
 def test_api_image_does_not_run_as_root():

@@ -9,6 +9,13 @@ import socket
 import threading
 
 
+def open_upstream(target_host: str, target_port: int, connect_timeout: float = 5):
+    """Соединение с целью. Таймаут только на установку, не на длинную выгрузку."""
+    upstream = socket.create_connection((target_host, target_port), timeout=connect_timeout)
+    upstream.settimeout(None)
+    return upstream
+
+
 def _pipe(src: socket.socket, dst: socket.socket) -> None:
     try:
         while True:
@@ -76,7 +83,7 @@ class TcpRelay:
 
     def _handle(self, client: socket.socket) -> None:
         try:
-            upstream = socket.create_connection((self._target_host, self._target_port), timeout=5)
+            upstream = open_upstream(self._target_host, self._target_port)
         except OSError:
             client.close()
             return

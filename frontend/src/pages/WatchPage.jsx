@@ -321,6 +321,7 @@ export function WatchPage() {
           autoPlay
           theater={theater}
           onTheater={setTheater}
+          upNext={related[0] ? { title: related[0].title, channel: related[0].channel_name } : null}
           onAutoplayNext={() => {
             if (related[0]) {
               navigate(`/watch/${related[0].id}`);

@@ -21,6 +21,8 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_API_CORS_ALLOW_ORIGIN: ${CORS_ORIGINS}
+      MINIO_BROWSER: "on"
+      MINIO_CONSOLE_PORT_NUMBER: "9001"
     volumes:
       - minio-data:/bitnami/minio/data
     ports:

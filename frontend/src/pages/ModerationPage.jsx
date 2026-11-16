@@ -59,7 +59,7 @@ export function ModerationPage() {
       {items.length === 0 ? <p>Открытых жалоб нет</p> : null}
       <ul className="report-list">
         {items.map((item) => (
-          <li key={item.id} className="report-row">
+          <li key={item.id} className="report-row moderation-card">
             <Link to={`/watch/${item.video_id}`}>{item.video_title || "Ролик"}</Link>
             <p>{item.reason}</p>
             <p>{item.reporter_username}</p>
