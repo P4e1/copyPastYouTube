@@ -7,6 +7,7 @@ import {
   bufferedFraction,
   formatPlayerClock,
   formatPlayerTimeLabel,
+  playerView,
   rateLabel,
   seekToRatio,
 } from "./player.js";
@@ -44,6 +45,35 @@ test("settings list uses YouTube speeds and calls 1x ordinary", () => {
   assert.deepEqual(PLAYBACK_RATES, [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]);
   assert.equal(rateLabel(1), "Обычная");
   assert.equal(rateLabel(1.25), "1,25");
+});
+
+test("wide screen fills the window and the ordinary screen keeps the side column", () => {
+  assert.deepEqual(playerView(false), {
+    frame: "half",
+    watchClass: "watch",
+    guide: "kept",
+  });
+  assert.deepEqual(playerView(true), {
+    frame: "full",
+    watchClass: "watch watch--theater",
+    guide: "closed",
+  });
+});
+
+test("full-window stage stretches across the watch column", () => {
+  const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+  const blocks = css.match(/\.watch\.watch--theater\s*\{[^}]*\}/g) || [];
+  assert.ok(blocks.some((block) => /align-items:\s*stretch/.test(block)));
+  assert.match(
+    css,
+    /\.watch\.watch--theater \.watch__left,\s*\.watch\.watch--theater \.watch__main\s*\{[^}]*width:\s*100%/,
+  );
+});
+
+test("fullscreen fills the window when the browser blocks the fullscreen api", () => {
+  const source = readFileSync(new URL("./components/Player.jsx", import.meta.url), "utf8");
+  assert.match(source, /yt-player--window/);
+  assert.match(source, /requestFullscreen\?\.\(\)[\s\S]*?\.catch\(/);
 });
 
 test("player reads settings before the speed state that uses them", () => {

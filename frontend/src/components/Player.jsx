@@ -45,6 +45,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const [chrome, setChrome] = useState(true);
   const [remaining, setRemaining] = useState(false);
   const [full, setFull] = useState(false);
+  const [windowed, setWindowed] = useState(false);
   const [breakOpen, setBreakOpen] = useState(false);
   const [autoplay, setAutoplay] = useState(settings.autoplayNext);
   const [nudge, setNudge] = useState("");
@@ -102,6 +103,9 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
       } else if (key === "f") {
         event.preventDefault();
         toggleFull();
+      } else if (key === "escape" && windowed) {
+        event.preventDefault();
+        setWindowed(false);
       } else if (key === "t") {
         event.preventDefault();
         onTheater?.(!theater);
@@ -166,10 +170,16 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
     if (!node) {
       return;
     }
-    if (document.fullscreenElement) {
+    if (document.fullscreenElement || windowed) {
       document.exitFullscreen?.();
+      setWindowed(false);
+      return;
+    }
+    const request = node.requestFullscreen?.();
+    if (request && typeof request.then === "function") {
+      request.catch(() => setWindowed(true));
     } else {
-      node.requestFullscreen?.();
+      setWindowed(true);
     }
   }
 
@@ -261,6 +271,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
     }
   }
 
+  const expanded = full || windowed;
   const played = duration ? Math.min(1, time / duration) : 0;
   const clock = remaining
     ? `-${formatPlayerClock(Math.max(0, duration - time))}`
@@ -270,7 +281,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   return (
     <div
       ref={rootRef}
-      className={shown ? "yt-player yt-player--chrome" : "yt-player"}
+      className={["yt-player", shown ? "yt-player--chrome" : "", windowed ? "yt-player--window" : ""].filter(Boolean).join(" ")}
       onMouseMove={reveal}
       onMouseLeave={() => playing && !menu && setChrome(false)}
       onClick={onSurfaceClick}
@@ -388,10 +399,10 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
             <button
               type="button"
               className="yt-player__btn"
-              aria-label={full ? "Выйти из полноэкранного режима (f)" : "Во весь экран (f)"}
+              aria-label={expanded ? "Выйти из полноэкранного режима (f)" : "Во весь экран (f)"}
               onClick={toggleFull}
             >
-              <Glyph d={full ? ICONS.exitFull : ICONS.full} />
+              <Glyph d={expanded ? ICONS.exitFull : ICONS.full} />
             </button>
           </div>
         </div>

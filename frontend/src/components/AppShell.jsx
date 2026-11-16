@@ -57,6 +57,15 @@ export function AppShell() {
   const voiceRef = useRef(null);
 
   useEffect(() => {
+    function onFrame(event) {
+      const narrowNow = window.matchMedia(NARROW).matches;
+      setOpen(event.detail !== "full" && !narrowNow);
+    }
+    window.addEventListener("cpy-player-frame", onFrame);
+    return () => window.removeEventListener("cpy-player-frame", onFrame);
+  }, []);
+
+  useEffect(() => {
     const query = window.matchMedia(NARROW);
     const onChange = (event) => {
       setNarrow(event.matches);
@@ -220,7 +229,7 @@ export function AppShell() {
         <div className="topbar__center">
           {chrome.showSearchButton ? (
             <button type="button" className="icon-button" aria-label="Поиск" onClick={() => setSearchOpen(true)}>
-              <Glyph d={PATHS.search} />
+              <Glyph d={PATHS.search} fillRule="evenodd" />
             </button>
           ) : null}
           {chrome.showSearchForm ? (
@@ -269,8 +278,8 @@ export function AppShell() {
                   ) : null}
                 </div>
               </div>
-              <button className="search__button" type="submit" aria-label="Искать">
-                <Glyph d={PATHS.search} />
+              <button className="search__button" type="submit" aria-label="Поиск">
+                <Glyph d={PATHS.search} fillRule="evenodd" />
               </button>
             </form>
           ) : null}
@@ -582,10 +591,10 @@ function VideoGlyph() {
   );
 }
 
-function Glyph({ d }) {
+function Glyph({ d, fillRule }) {
   return (
     <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
-      <path d={d} />
+      <path d={d} fillRule={fillRule} />
     </svg>
   );
 }

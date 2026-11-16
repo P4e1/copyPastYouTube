@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { Player } from "../components/Player";
+import { playerView } from "../player";
 import { formatAgo, formatCompact, formatSubscribers, formatViews, formatDuration } from "../format";
 import { useSession } from "../session";
 import { useSettings } from "../settings-context";
@@ -50,6 +51,20 @@ export function WatchPage() {
   const [reportSent, setReportSent] = useState(false);
   const [reportError, setReportError] = useState("");
   const [theater, setTheater] = useState(false);
+  const view = playerView(theater);
+
+  useEffect(() => {
+    document.documentElement.dataset.player = view.frame;
+    if (view.guide === "closed") {
+      window.dispatchEvent(new CustomEvent("cpy-player-frame", { detail: "full" }));
+    }
+    return () => {
+      delete document.documentElement.dataset.player;
+      if (view.guide === "closed") {
+        window.dispatchEvent(new CustomEvent("cpy-player-frame", { detail: "half" }));
+      }
+    };
+  }, [view.frame, view.guide]);
 
   useEffect(() => {
     let active = true;
@@ -285,7 +300,7 @@ export function WatchPage() {
         : others;
 
   return (
-    <article className={theater ? "watch watch--theater" : "watch"}>
+    <article className={view.watchClass}>
       <div className="watch__left">
       <div className="watch__main">
         <Player

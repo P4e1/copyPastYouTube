@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -96,6 +97,12 @@ test("settings page lists the same sections as YouTube", () => {
   );
   assert.equal(SETTINGS_NAV[0].to, "/account");
   assert.equal(SETTINGS_NAV[3].to, "/account/playback");
+});
+
+test("search control shows a ring icon with the label Поиск", () => {
+  const source = readFileSync(new URL("./components/AppShell.jsx", import.meta.url), "utf8");
+  assert.match(source, /className="search__button" type="submit" aria-label="Поиск"/);
+  assert.match(source, /<Glyph d=\{PATHS\.search\} fillRule="evenodd" \/>/);
 });
 
 test("narrow header keeps a search button until the field is open", () => {

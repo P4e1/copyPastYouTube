@@ -47,6 +47,12 @@ export function bufferedFraction(ranges, current, duration) {
   return Math.min(1, Math.max(0, end / length));
 }
 
+export function playerView(wide) {
+  return wide
+    ? { frame: "full", watchClass: "watch watch--theater", guide: "closed" }
+    : { frame: "half", watchClass: "watch", guide: "kept" };
+}
+
 export function rateLabel(rate) {
   if (rate === 1) {
     return "Обычная";
