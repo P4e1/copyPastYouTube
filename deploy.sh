@@ -1,11 +1,38 @@
 #!/usr/bin/env bash
+# Одна команда с чистой машины: скачать публичный репозиторий и поднять сервисы.
+# Уже в каталоге проекта: bash deploy.sh
+# С нуля: bash -c "$(curl -fsSL https://raw.githubusercontent.com/P4e1/copyPastYouTube/feature/youtube-clone/deploy.sh)"
 set -euo pipefail
 
-cd "$(dirname "$0")"
+REPO_URL="${CPY_REPO:-https://github.com/P4e1/copyPastYouTube.git}"
+REPO_REF="${CPY_REF:-feature/youtube-clone}"
 
-if [[ ! -f .env ]]; then
-  cp .env.example .env
+script_path="${BASH_SOURCE[0]:-}"
+script_dir=""
+if [[ -n "$script_path" && -f "$script_path" ]]; then
+  script_dir="$(cd "$(dirname "$script_path")" && pwd)"
 fi
+
+if [[ -z "$script_dir" || ! -f "$script_dir/docker-compose.yml" ]]; then
+  if ! command -v git >/dev/null 2>&1; then
+    echo "Нужен git, чтобы забрать ${REPO_URL}"
+    exit 1
+  fi
+  dest="${CPY_DIR:-$PWD/copyPastYouTube}"
+  if [[ ! -f "$dest/docker-compose.yml" ]]; then
+    git clone --branch "$REPO_REF" --depth 1 "$REPO_URL" "$dest"
+  fi
+  exec bash "$dest/deploy.sh"
+fi
+
+cd "$script_dir"
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Нужен Docker с командой docker compose."
+  exit 1
+fi
+
+bash "$script_dir/scripts/write_env.sh" "$script_dir/.env"
 
 dump_logs() {
   echo "Состояние контейнеров и последние логи API и MinIO:"

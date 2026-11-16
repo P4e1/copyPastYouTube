@@ -4,7 +4,7 @@
 
 ## Контейнеры
 
-`docker-compose.yml` задаёт пять сервисов без профиля. `bash deploy.sh` собирает их, применяет миграции и запускает `scripts/seed.py`. Повторный запуск сида не создаёт вторые демо-учётки.
+`docker-compose.yml` задаёт пять сервисов без профиля. С чистой машины `bash -c "$(curl -fsSL https://raw.githubusercontent.com/P4e1/copyPastYouTube/feature/youtube-clone/deploy.sh)"` клонирует публичный репозиторий, пишет секреты и собирает сервисы. В уже скачанном каталоге достаточно `bash deploy.sh`: он применяет миграции и запускает `scripts/seed.py`. Повторный запуск сида не создаёт вторые демо-учётки. API и воркер работают от пользователя `appuser`.
 
 - `api` — процесс FastAPI. Единственная точка входа HTTP: `backend/app/main.py`.
 - `worker` — отдельный процесс той же кодовой базы. Из каталога `backend`, с тем же окружением, что у API: `python -m app.worker`. Один проход очереди без ожидания: `python -m app.worker --once`. Процесс забирает `pending`, ffmpeg снимает превью и переводит видео в `ready` или `failed`.

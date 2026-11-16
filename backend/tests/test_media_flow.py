@@ -37,7 +37,7 @@ def _app():
     os.environ["MINIO_ROOT_USER"] = "minio"
     os.environ["MINIO_ROOT_PASSWORD"] = "change-me-minio"
     os.environ["MINIO_BUCKET"] = "videos"
-    os.environ.setdefault("JWT_SECRET", "test-jwt-secret")
+    os.environ["JWT_SECRET"] = "test-jwt-secret-ok"
     from app.main import create_app
 
     return create_app()

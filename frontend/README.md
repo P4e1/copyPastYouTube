@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Dev-сервер открывается на `http://127.0.0.1:5173`. Базовый адрес API берётся из `VITE_API_BASE` (образец — [.env.example](.env.example), по умолчанию `http://127.0.0.1:8000`). Этот адрес должен быть в `CORS_ORIGINS` бэкенда. В контейнере сборка ходит на `/api` того же адреса, что и страница: `POST /api/auth/login` становится `POST /auth/login` у контейнера API. Nginx резолвит имя `api` при каждом запросе и только по IPv4, иначе после старта отвечает 502 при живом API.
+Dev-сервер открывается на `http://127.0.0.1:5173`. Базовый адрес API берётся из `VITE_API_BASE` (образец — [.env.example](.env.example), по умолчанию `http://127.0.0.1:8000`). Этот адрес должен быть в `CORS_ORIGINS` бэкенда. В контейнере сборка ходит на `/api` того же адреса, что и страница: `POST /api/auth/login` становится `POST /auth/login` у контейнера API. Nginx резолвит имя `api` при каждом запросе и только по IPv4, иначе после старта отвечает 502 при живом API. Ответ страницы несёт `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN` и Content-Security-Policy: скрипты только со своего адреса, стили ещё с fonts.googleapis.com, шрифты с fonts.gstatic.com.
 
 ## Каркас
 

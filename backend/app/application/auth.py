@@ -11,6 +11,9 @@ from app.domain.auth import (
     StoredUser,
     UserRepository,
 )
+from app.domain.security import ensure_password
+
+_dummy_hash: str | None = None
 
 
 def _account(stored: StoredUser) -> Account:
@@ -30,6 +33,7 @@ def register_user(
     username: str,
     password: str,
 ) -> Account:
+    ensure_password(password)
     if users.get_by_email(email) is not None:
         raise EmailTakenError("Email уже занят")
     stored = users.add_user_with_channel(
@@ -50,8 +54,12 @@ def authenticate(
     email: str,
     password: str,
 ) -> Account:
+    global _dummy_hash
+    if _dummy_hash is None:
+        _dummy_hash = hasher.hash("not-a-real-password")
     stored = users.get_by_email(email)
-    if stored is None or not hasher.verify(password, stored.password_hash):
+    password_hash = stored.password_hash if stored is not None else _dummy_hash
+    if stored is None or not hasher.verify(password, password_hash):
         raise InvalidCredentialsError("Неверный email или пароль")
     return _account(stored)
 

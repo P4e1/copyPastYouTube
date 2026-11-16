@@ -52,6 +52,7 @@ from app.infrastructure.moderation_gateway import (
     restore_hidden_video,
 )
 from app.infrastructure.storage_factory import build_storage
+from app.domain.security import ensure_jwt_secret
 from app.infrastructure.video_gateway import (
     bind_create_video,
     feed_cards,
@@ -69,10 +70,12 @@ from app.presentation.errors import register_exception_handlers
 from app.presentation.health import router as health_router
 from app.presentation.media import router as media_router
 from app.presentation.moderation import router as moderation_router
+from app.presentation.security import AuthRateLimitMiddleware, SecurityHeadersMiddleware
 from app.presentation.videos import router as video_router
 
 
 def create_app() -> FastAPI:
+    ensure_jwt_secret(os.environ.get("JWT_SECRET"))
     database_url = os.environ["DATABASE_URL"]
     init_engine(database_url)
     storage = build_storage()
@@ -91,6 +94,9 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    limit = int(os.environ.get("AUTH_RATE_LIMIT", "20"))
+    app.add_middleware(AuthRateLimitMiddleware, limit=limit)
+    app.add_middleware(SecurityHeadersMiddleware)
     app.state.object_storage = storage
     app.state.check_database = check_database
     app.state.register_account = register_account

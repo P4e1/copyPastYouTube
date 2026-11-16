@@ -16,6 +16,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+os.environ["JWT_SECRET"] = "test-jwt-secret-ok"
+os.environ.setdefault("JWT_ALGORITHM", "HS256")
+os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+os.environ["AUTH_RATE_LIMIT"] = "10000"
+os.environ["CORS_ORIGINS"] = "http://127.0.0.1:5173,http://localhost:5173"
+
 
 @pytest.fixture(scope="session")
 def database_url():
@@ -28,7 +34,8 @@ def database_url():
 
 @pytest.fixture(scope="session")
 def app(database_url):
-    os.environ.setdefault("JWT_SECRET", "test-jwt-secret")
+    os.environ["JWT_SECRET"] = "test-jwt-secret-ok"
+    os.environ["AUTH_RATE_LIMIT"] = "10000"
     os.environ.setdefault("JWT_ALGORITHM", "HS256")
     os.environ.setdefault("ACCESS_TOKEN_EXPIRE_MINUTES", "60")
     from app.main import create_app
