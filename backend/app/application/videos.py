@@ -179,5 +179,16 @@ def list_feed(videos: VideoRepository) -> list[VideoCard]:
     return [_card(video, hidden_mark=False) for video in videos.feed() if in_feed(_snapshot(video))]
 
 
+def list_subscription_feed(videos: VideoRepository, channel_ids: list[str]) -> list[VideoCard]:
+    wanted = {channel_id for channel_id in channel_ids if channel_id}
+    if not wanted:
+        return []
+    return [
+        _card(video, hidden_mark=False)
+        for video in videos.feed()
+        if video.channel_id in wanted and in_feed(_snapshot(video))
+    ]
+
+
 def search_videos(videos: VideoRepository, query: str) -> list[VideoCard]:
     return [_card(video, hidden_mark=False) for video in videos.search(query) if in_feed(_snapshot(video))]

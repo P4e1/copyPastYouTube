@@ -161,3 +161,34 @@ def test_stranger_cannot_rename_channel_or_fill_foreign_playlist(client):
     listed = client.get(f"/playlists?channel_id={owner['channel_id']}", headers=owner["headers"])
     playlist = next(item for item in listed.json()["items"] if item["id"] == playlist_id)
     assert playlist["items"] == []
+
+
+def test_subscription_feed_lists_ready_public_videos_of_followed_channels(client):
+    owner = _auth(client)
+    other = _auth(client)
+    subscriber = _auth(client)
+    older = _video(client, owner["headers"], title="Старый")
+    newer = _video(client, owner["headers"], title="Свежий")
+    private_id = _video(client, owner["headers"], title="Закрытый", visibility="private")
+    draft = _video(client, owner["headers"], title="Черновик")
+    foreign = _video(client, other["headers"], title="Чужой")
+    _set_status(older, "ready")
+    _set_status(newer, "ready")
+    _set_status(private_id, "ready")
+    _set_status(foreign, "ready")
+
+    guest = client.get("/subscriptions/feed")
+    empty = client.get("/subscriptions/feed", headers=subscriber["headers"])
+    client.post(f"/channels/{owner['channel_id']}/subscribe", headers=subscriber["headers"])
+    listed = client.get("/subscriptions/feed", headers=subscriber["headers"])
+
+    assert guest.status_code == 401
+    assert empty.status_code == 200
+    assert empty.json()["items"] == []
+    assert [item["id"] for item in listed.json()["items"]] == [newer, older]
+    assert listed.json()["items"][0]["title"] == "Свежий"
+    assert listed.json()["items"][0]["channel_name"]
+    assert private_id not in {item["id"] for item in listed.json()["items"]}
+    assert draft not in {item["id"] for item in listed.json()["items"]}
+    assert foreign not in {item["id"] for item in listed.json()["items"]}
+

@@ -1,27 +1,32 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 
 import { api } from "../api/client";
+import { VideoCard } from "../components/VideoCard";
 import { useSession } from "../session";
+import { subscriptionFeed } from "../subscriptions";
 
 export function SubscriptionsPage() {
   const { token } = useSession();
-  const [items, setItems] = useState(null);
+  const [channels, setChannels] = useState(null);
+  const [videos, setVideos] = useState(null);
 
   useEffect(() => {
     if (!token) {
       return undefined;
     }
     let active = true;
-    api("/subscriptions")
-      .then((data) => {
+    Promise.all([api("/subscriptions"), api("/subscriptions/feed")])
+      .then(([followed, feed]) => {
         if (active) {
-          setItems(data.items);
+          setChannels(followed.items || []);
+          setVideos(feed.items || []);
         }
       })
       .catch(() => {
         if (active) {
-          setItems([]);
+          setChannels([]);
+          setVideos([]);
         }
       });
     return () => {
@@ -29,26 +34,29 @@ export function SubscriptionsPage() {
     };
   }, [token]);
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
+  const view = subscriptionFeed({
+    signedIn: Boolean(token),
+    channels: channels || [],
+    videos: videos || [],
+  });
+  if (view.redirect) {
+    return <Navigate to={view.redirect} replace />;
   }
-  if (items === null) {
+  if (channels === null || videos === null) {
     return null;
   }
-  if (items.length === 0) {
+  if (view.empty) {
     return (
       <section className="empty">
-        <h1>Подписок пока нет</h1>
+        <h1>{view.empty}</h1>
       </section>
     );
   }
   return (
-    <ul className="sub-list">
-      {items.map((channel) => (
-        <li key={channel.id}>
-          <Link to={`/channel/${channel.id}`}>{channel.name}</Link>
-        </li>
+    <section className="video-grid">
+      {view.items.map((video) => (
+        <VideoCard key={video.id} video={video} />
       ))}
-    </ul>
+    </section>
   );
 }

@@ -5,7 +5,7 @@ create_app собирает FastAPI, проверку PostgreSQL, Swagger /docs 
 
 Подключённые маршруты:
 - auth: /auth/register, /auth/login, /auth/me
-- videos: POST /videos, GET /videos/{id}, GET /feed, GET /search, GET /history
+- videos: POST /videos, GET /videos/{id}, GET /feed, GET /search, GET /history, GET /subscriptions/feed
 - engagement: POST /videos/{id}/view, POST /videos/{id}/like, GET /videos/{id}/reactions, GET и POST /videos/{id}/comments, DELETE /videos/{id}/comments/{comment_id}
 - channels: GET /channels/{id}, PATCH /channels/{id}, POST и DELETE /channels/{id}/subscribe, GET /subscriptions
 - playlists: GET и POST /playlists, POST /playlists/{id}/items
@@ -55,6 +55,7 @@ from app.infrastructure.video_gateway import (
     bind_create_video,
     feed_cards,
     history_cards,
+    subscription_feed_cards,
     revise_for_owner,
     search_cards,
     video_card,
@@ -100,6 +101,7 @@ def create_app() -> FastAPI:
     app.state.get_video = lambda video_id, viewer_id: video_card(video_id, viewer_id, storage)
     app.state.list_feed = lambda: feed_cards(storage)
     app.state.list_history = lambda viewer_id: history_cards(viewer_id, storage)
+    app.state.subscription_feed = lambda viewer_id: subscription_feed_cards(viewer_id, storage)
     app.state.search_videos = lambda query: search_cards(query, storage)
     app.state.complete_upload = lambda video_id, owner_id: complete_for_owner(storage, video_id, owner_id)
     app.state.playback_url = lambda video_id, viewer_id: playback_for_viewer(storage, video_id, viewer_id)

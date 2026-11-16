@@ -6,8 +6,18 @@ from dataclasses import replace
 
 from sqlalchemy.orm import Session
 
+from app.application.channels import list_subscriptions
 from app.application.engagement import list_history
-from app.application.videos import VideoCard, create_video, list_feed, open_video, revise_upload, search_videos
+from app.application.videos import (
+    VideoCard,
+    create_video,
+    list_feed,
+    list_subscription_feed,
+    open_video,
+    revise_upload,
+    search_videos,
+)
+from app.infrastructure.channel_repository import SqlChannelRepository
 from app.infrastructure.engagement_repository import SqlEngagementRepository
 from app.domain.storage import ObjectStorage
 from app.infrastructure import db
@@ -87,6 +97,13 @@ def _with_thumbnail(card: VideoCard, storage: ObjectStorage | None) -> VideoCard
 def video_card(video_id: str, viewer_id: str | None, storage: ObjectStorage | None = None) -> VideoCard:
     with _session_scope() as session:
         return _with_thumbnail(open_video(SqlVideoRepository(session), video_id, viewer_id), storage)
+
+
+def subscription_feed_cards(viewer_id: str, storage: ObjectStorage | None = None) -> list[VideoCard]:
+    with _session_scope() as session:
+        channels = list_subscriptions(SqlChannelRepository(session), viewer_id)
+        cards = list_subscription_feed(SqlVideoRepository(session), [channel.id for channel in channels])
+        return [_with_thumbnail(card, storage) for card in cards]
 
 
 def history_cards(viewer_id: str, storage: ObjectStorage | None = None) -> list[VideoCard]:

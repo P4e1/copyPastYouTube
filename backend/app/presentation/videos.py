@@ -128,6 +128,12 @@ def get_video(video_id: str, request: Request) -> VideoOut:
     return _out(card)
 
 
+@router.get("/subscriptions/feed", response_model=VideoListOut)
+def subscription_feed(request: Request) -> VideoListOut:
+    account = _required_account(request)
+    return VideoListOut(items=[_out(card) for card in request.app.state.subscription_feed(account.id)])
+
+
 @router.get("/feed", response_model=VideoListOut)
 def feed(request: Request) -> VideoListOut:
     return VideoListOut(items=[_out(card) for card in request.app.state.list_feed()])
