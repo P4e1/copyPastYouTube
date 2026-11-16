@@ -3,7 +3,7 @@
 import uuid
 from dataclasses import dataclass
 
-from app.domain.channels import ensure_channel_owner, ensure_not_own_subscription
+from app.domain.channels import ensure_channel_owner, ensure_not_own_subscription, subscription_visible
 from app.domain.errors import NotFoundError
 from app.domain.videos import VideoSnapshot, VideoStatus, View, Visibility, view_access
 
@@ -137,7 +137,11 @@ def open_channel(channels: ChannelRepository, channel_id: str, viewer_id: str | 
         name=channel.name,
         description=channel.description,
         subscriber_count=channels.subscriber_count(channel_id),
-        subscribed=bool(viewer_id) and channels.subscription_exists(viewer_id, channel_id),
+        subscribed=subscription_visible(
+            channel.owner_id,
+            viewer_id,
+            bool(viewer_id) and channels.subscription_exists(viewer_id, channel_id),
+        ),
         videos=videos,
     )
 

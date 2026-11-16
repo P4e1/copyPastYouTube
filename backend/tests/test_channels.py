@@ -180,10 +180,12 @@ def test_owner_cannot_subscribe_to_own_channel(client):
 
     listed = client.get("/subscriptions", headers=owner["headers"])
     channel = client.get(f"/channels/{owner['channel_id']}")
+    own = client.get(f"/channels/{owner['channel_id']}", headers=owner["headers"])
 
     assert listed.status_code == 200
     assert listed.json()["items"] == []
     assert channel.json()["subscriber_count"] == 0
+    assert own.json()["subscribed"] is False
 
 
 
