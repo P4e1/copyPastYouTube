@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from
 import { api } from "../api/client";
 import { channelHandle } from "../channel";
 import { guideItemActive, guideMode, guideYouLinks, visibleSubscriptions } from "../guide";
+import { progressPhase } from "../progress";
 import { applyKey, keyLabel, keyboardRows, toggleLayout } from "../keyboard";
 import { SHORTCUTS, THEME_OPTIONS, headerChrome, subscriptionNotices, themeLabel, voiceQueryPath } from "../settings";
 import { useSettings } from "../settings-context";
@@ -54,8 +55,15 @@ export function AppShell() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [subsOpen, setSubsOpen] = useState(false);
   const [youOpen, setYouOpen] = useState(true);
+  const [loading, setLoading] = useState(true);
   const miniGuide = guideMode({ open, narrow }) === "mini";
   const voiceRef = useRef(null);
+
+  useEffect(() => {
+    setLoading(true);
+    const timer = window.setTimeout(() => setLoading(false), 700);
+    return () => window.clearTimeout(timer);
+  }, [location.pathname, location.search]);
 
   useEffect(() => {
     function onFrame(event) {
@@ -212,6 +220,7 @@ export function AppShell() {
   return (
     <div className={open ? "shell shell--nav-open" : "shell"}>
       <header className={narrow && searchOpen ? "topbar topbar--search" : "topbar"}>
+        <div className={progressPhase(loading) === "run" ? "top-progress top-progress--run" : "top-progress"} />
         <div className="topbar__start">
           <button
             type="button"

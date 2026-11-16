@@ -94,6 +94,34 @@ svg {
   background: var(--bg);
 }
 
+.top-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  width: 0;
+  background: #ff0000;
+  pointer-events: none;
+}
+
+.top-progress--run {
+  animation: top-progress 700ms ease-out forwards;
+}
+
+@keyframes top-progress {
+  0% {
+    width: 0;
+    opacity: 1;
+  }
+  45% {
+    width: 55%;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
 .topbar__start,
 .topbar__end,
 .topbar__center {
