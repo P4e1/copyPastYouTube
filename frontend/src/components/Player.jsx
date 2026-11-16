@@ -31,6 +31,9 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const barRef = useRef(null);
   const hideTimer = useRef(0);
   const clickTimer = useRef(0);
+  const watchedRef = useRef(0);
+  const lastMediaRef = useRef(0);
+  const { settings, updateSettings } = useSettings();
   const [playing, setPlaying] = useState(false);
   const [time, setTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -43,9 +46,6 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const [remaining, setRemaining] = useState(false);
   const [full, setFull] = useState(false);
   const [breakOpen, setBreakOpen] = useState(false);
-  const watchedRef = useRef(0);
-  const lastMediaRef = useRef(0);
-  const { settings, updateSettings } = useSettings();
   const [autoplay, setAutoplay] = useState(settings.autoplayNext);
   const [nudge, setNudge] = useState("");
 

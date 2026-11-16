@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import {
@@ -43,4 +44,12 @@ test("settings list uses YouTube speeds and calls 1x ordinary", () => {
   assert.deepEqual(PLAYBACK_RATES, [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2]);
   assert.equal(rateLabel(1), "Обычная");
   assert.equal(rateLabel(1.25), "1,25");
+});
+
+test("player reads settings before the speed state that uses them", () => {
+  const source = readFileSync(new URL("./components/Player.jsx", import.meta.url), "utf8");
+  const settingsAt = source.indexOf("useSettings()");
+  const rateAt = source.indexOf("useState(settings.playbackRate)");
+  assert.ok(settingsAt !== -1 && rateAt !== -1);
+  assert.ok(settingsAt < rateAt);
 });
