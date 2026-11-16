@@ -51,6 +51,12 @@ class EngagementRepository:
     def delete_comment(self, comment_id: str) -> None:
         raise NotImplementedError
 
+    def remember_watch(self, user_id: str, video_id: str) -> None:
+        raise NotImplementedError
+
+    def history_ids(self, user_id: str) -> list[str]:
+        raise NotImplementedError
+
 
 def _require_ready(videos, video_id: str, viewer_id: str):
     stored = videos.get(video_id)
@@ -69,7 +75,21 @@ def _require_ready(videos, video_id: str, viewer_id: str):
 
 def record_view(videos, engagement: EngagementRepository, video_id: str, viewer_id: str) -> int:
     _require_ready(videos, video_id, viewer_id)
-    return engagement.increment_view(video_id)
+    count = engagement.increment_view(video_id)
+    engagement.remember_watch(viewer_id, video_id)
+    return count
+
+
+def list_history(videos, engagement: EngagementRepository, viewer_id: str):
+    from app.application.videos import open_video
+
+    cards = []
+    for video_id in engagement.history_ids(viewer_id):
+        try:
+            cards.append(open_video(videos, video_id, viewer_id))
+        except NotFoundError:
+            continue
+    return cards
 
 
 def reaction_counts(engagement: EngagementRepository, video_id: str, viewer_id: str | None) -> tuple[int, int, int]:

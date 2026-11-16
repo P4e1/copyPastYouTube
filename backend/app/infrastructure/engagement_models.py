@@ -16,6 +16,14 @@ class LikeRow(Base):
     value: Mapped[int] = mapped_column(SmallInteger, nullable=False)
 
 
+class WatchHistoryRow(Base):
+    __tablename__ = "watch_history"
+
+    user_id: Mapped[str] = mapped_column(String(36), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
+    video_id: Mapped[str] = mapped_column(String(36), ForeignKey("videos.id", ondelete="CASCADE"), primary_key=True)
+    watched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class CommentRow(Base):
     __tablename__ = "comments"
 

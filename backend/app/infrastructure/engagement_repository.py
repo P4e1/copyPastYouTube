@@ -7,13 +7,31 @@ from sqlalchemy.orm import Session
 
 from app.application.engagement import Comment
 from app.infrastructure.auth_models import UserRow
-from app.infrastructure.engagement_models import CommentRow, LikeRow
+from app.infrastructure.engagement_models import CommentRow, LikeRow, WatchHistoryRow
 from app.infrastructure.video_models import VideoRow
 
 
 class SqlEngagementRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
+
+    def remember_watch(self, user_id: str, video_id: str) -> None:
+        row = self._session.get(WatchHistoryRow, {"user_id": user_id, "video_id": video_id})
+        now = datetime.now(timezone.utc)
+        if row is None:
+            self._session.add(WatchHistoryRow(user_id=user_id, video_id=video_id, watched_at=now))
+        else:
+            row.watched_at = now
+        self._session.flush()
+
+    def history_ids(self, user_id: str) -> list[str]:
+        return list(
+            self._session.scalars(
+                select(WatchHistoryRow.video_id)
+                .where(WatchHistoryRow.user_id == user_id)
+                .order_by(WatchHistoryRow.watched_at.desc())
+            )
+        )
 
     def increment_view(self, video_id: str) -> int:
         row = self._session.get(VideoRow, video_id)

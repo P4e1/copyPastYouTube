@@ -133,6 +133,12 @@ def feed(request: Request) -> VideoListOut:
     return VideoListOut(items=[_out(card) for card in request.app.state.list_feed()])
 
 
+@router.get("/history", response_model=VideoListOut)
+def history(request: Request) -> VideoListOut:
+    account = _required_account(request)
+    return VideoListOut(items=[_out(card) for card in request.app.state.list_history(account.id)])
+
+
 @router.get("/search", response_model=VideoListOut)
 def search(q: str, request: Request) -> VideoListOut:
     return VideoListOut(items=[_out(card) for card in request.app.state.search_videos(q)])

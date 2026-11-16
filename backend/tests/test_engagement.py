@@ -156,6 +156,42 @@ def test_comment_is_listed_and_reply_keeps_parent(client):
     assert by_id[reply.json()["id"]]["parent_id"] == comment_id
 
 
+def _set_visibility(video_id: str, visibility: str) -> None:
+    with db._engine.begin() as connection:
+        connection.execute(
+            text("update videos set visibility = :visibility where id = :video_id"),
+            {"visibility": visibility, "video_id": video_id},
+        )
+
+
+def test_history_keeps_each_watched_video_once_and_newest_first(client):
+    owner = _auth(client)
+    viewer = _auth(client)
+    first = _video(client, owner["headers"], title="Первый")
+    second = _video(client, owner["headers"], title="Второй")
+    _set_status(first, "ready")
+    _set_status(second, "ready")
+
+    guest = client.get("/history")
+    empty = client.get("/history", headers=viewer["headers"])
+    client.post(f"/videos/{first}/view", headers=viewer["headers"])
+    client.post(f"/videos/{second}/view", headers=viewer["headers"])
+    listed = client.get("/history", headers=viewer["headers"])
+    client.post(f"/videos/{first}/view", headers=viewer["headers"])
+    repeated = client.get("/history", headers=viewer["headers"])
+    _set_visibility(first, "private")
+    closed = client.get("/history", headers=viewer["headers"])
+
+    assert guest.status_code == 401
+    assert empty.status_code == 200
+    assert empty.json()["items"] == []
+    assert [item["id"] for item in listed.json()["items"]] == [second, first]
+    assert listed.json()["items"][0]["title"] == "Второй"
+    assert [item["id"] for item in repeated.json()["items"]] == [first, second]
+    assert [item["id"] for item in closed.json()["items"]] == [second]
+    assert _view_count(first) == 2
+
+
 def test_stranger_cannot_delete_someone_elses_comment(client):
     owner = _auth(client)
     stranger = _auth(client)

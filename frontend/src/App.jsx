@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 
 import { AppShell } from "./components/AppShell";
 import { ChannelPage } from "./pages/ChannelPage";
+import { HistoryPage } from "./pages/HistoryPage";
 import { HomePage } from "./pages/HomePage";
 import { ModerationPage } from "./pages/ModerationPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -26,7 +27,7 @@ export function App() {
         <Route path="/search" element={<SearchPage />} />
         <Route path="/shorts" element={<PlaceholderPage text="Смотреть пока нечего" />} />
         <Route path="/subscriptions" element={<SubscriptionsPage />} />
-        <Route path="/history" element={<PlaceholderPage text="Смотреть пока нечего" />} />
+        <Route path="/history" element={<HistoryPage />} />
         <Route path="/moderation" element={<ModerationPage />} />
         <Route path="/channel/:channelId" element={<ChannelPage />} />
         <Route path="/account" element={<SettingsPage />} />
