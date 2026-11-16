@@ -3,7 +3,7 @@
 import uuid
 from dataclasses import dataclass
 
-from app.domain.channels import ensure_channel_owner
+from app.domain.channels import ensure_channel_owner, ensure_not_own_subscription
 from app.domain.errors import NotFoundError
 from app.domain.videos import VideoSnapshot, VideoStatus, View, Visibility, view_access
 
@@ -143,12 +143,14 @@ def open_channel(channels: ChannelRepository, channel_id: str, viewer_id: str | 
 
 
 def list_subscriptions(channels: ChannelRepository, subscriber_id: str) -> list[ChannelRecord]:
-    return channels.subscribed_channels(subscriber_id)
+    return [channel for channel in channels.subscribed_channels(subscriber_id) if channel.owner_id != subscriber_id]
 
 
 def subscribe(channels: ChannelRepository, channel_id: str, subscriber_id: str) -> None:
-    if channels.get(channel_id) is None:
+    channel = channels.get(channel_id)
+    if channel is None:
         raise NotFoundError("Не найдено")
+    ensure_not_own_subscription(channel.owner_id, subscriber_id)
     if not channels.subscription_exists(subscriber_id, channel_id):
         channels.add_subscription(subscriber_id, channel_id)
 

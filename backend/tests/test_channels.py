@@ -163,6 +163,30 @@ def test_stranger_cannot_rename_channel_or_fill_foreign_playlist(client):
     assert playlist["items"] == []
 
 
+def test_owner_cannot_subscribe_to_own_channel(client):
+    owner = _auth(client)
+    denied = client.post(f"/channels/{owner['channel_id']}/subscribe", headers=owner["headers"])
+
+    assert denied.status_code == 403
+    assert _subscription_count(owner["user_id"], owner["channel_id"]) == 0
+
+    with db._engine.begin() as connection:
+        connection.execute(
+            text(
+                "insert into subscriptions (subscriber_id, channel_id) values (:subscriber_id, :channel_id)"
+            ),
+            {"subscriber_id": owner["user_id"], "channel_id": owner["channel_id"]},
+        )
+
+    listed = client.get("/subscriptions", headers=owner["headers"])
+    channel = client.get(f"/channels/{owner['channel_id']}")
+
+    assert listed.status_code == 200
+    assert listed.json()["items"] == []
+    assert channel.json()["subscriber_count"] == 0
+
+
+
 def test_subscription_feed_lists_ready_public_videos_of_followed_channels(client):
     owner = _auth(client)
     other = _auth(client)

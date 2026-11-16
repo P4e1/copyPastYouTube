@@ -44,7 +44,13 @@ class SqlChannelRepository:
     def subscriber_count(self, channel_id: str) -> int:
         return int(
             self._session.scalar(
-                select(func.count()).select_from(SubscriptionRow).where(SubscriptionRow.channel_id == channel_id)
+                select(func.count())
+                .select_from(SubscriptionRow)
+                .join(ChannelRow, ChannelRow.id == SubscriptionRow.channel_id)
+                .where(
+                    SubscriptionRow.channel_id == channel_id,
+                    SubscriptionRow.subscriber_id != ChannelRow.owner_id,
+                )
             )
             or 0
         )

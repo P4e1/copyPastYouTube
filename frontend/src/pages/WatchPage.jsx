@@ -5,6 +5,7 @@ import { api } from "../api/client";
 import { Player } from "../components/Player";
 import { playerView } from "../player";
 import { formatAgo, formatCompact, formatSubscribers, formatViews, formatDuration } from "../format";
+import { subscribeControl } from "../subscribe";
 import { useSession } from "../session";
 import { useSettings } from "../settings-context";
 
@@ -326,15 +327,28 @@ export function WatchPage() {
               </Link>
               <p className="watch__subs">{channel ? formatSubscribers(channel.subscriber_count) : ""}</p>
             </div>
-            {channel?.subscribed && token ? (
-              <button type="button" className="icon-button watch-bell" aria-label="Вы подписаны" onClick={toggleSubscribe}>
-                <Icon d={ICONS.bell} />
-              </button>
-            ) : (
-              <button type="button" className="subscribe" onClick={toggleSubscribe}>
-                Подписаться
-              </button>
-            )}
+            {(() => {
+              const control = subscribeControl({
+                ownChannel: Boolean(account?.channel_id && video.channel_id === account.channel_id),
+                signedIn: Boolean(token),
+                subscribed: Boolean(channel?.subscribed),
+              });
+              if (control === "hidden") {
+                return null;
+              }
+              if (control === "subscribed") {
+                return (
+                  <button type="button" className="icon-button watch-bell" aria-label="Вы подписаны" onClick={toggleSubscribe}>
+                    <Icon d={ICONS.bell} />
+                  </button>
+                );
+              }
+              return (
+                <button type="button" className="subscribe" onClick={toggleSubscribe}>
+                  Подписаться
+                </button>
+              );
+            })()}
           </div>
           <div className="watch-tools">
             <div className="watch__actions">
