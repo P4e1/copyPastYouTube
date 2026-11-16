@@ -205,6 +205,7 @@ svg {
 }
 
 .icon-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -215,6 +216,21 @@ svg {
   border-radius: 50%;
   background: transparent;
   color: var(--text);
+}
+
+.watch-bell[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+.icon-button--alert::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff0000;
 }
 
 .icon-button:hover,

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
+import { bellBadge, mutedChannelNames, readBells, readSeen, rememberSeen, unseenIds } from "../bell";
 import { channelHandle } from "../channel";
 import { guideItemActive, guideMode, guideYouLinks, visibleSubscriptions } from "../guide";
 import { progressPhase } from "../progress";
@@ -50,6 +51,7 @@ export function AppShell() {
   const [createMenu, setCreateMenu] = useState(false);
   const [notify, setNotify] = useState(false);
   const [notices, setNotices] = useState([]);
+  const [seen, setSeen] = useState(() => readSeen(window.localStorage));
   const [voice, setVoice] = useState("");
   const [keys, setKeys] = useState(false);
   const [subscriptions, setSubscriptions] = useState([]);
@@ -135,7 +137,7 @@ export function AppShell() {
   }, [createMenu, menu, notify]);
 
   useEffect(() => {
-    if (!notify || !token || !settings.notifySubscriptions) {
+    if (!token || !settings.notifySubscriptions) {
       setNotices([]);
       return undefined;
     }
@@ -145,8 +147,10 @@ export function AppShell() {
         if (!active) {
           return;
         }
-        const names = (subs.items || []).map((item) => item.name);
-        setNotices(subscriptionNotices(feed.items || [], names, true));
+        const channels = subs.items || [];
+        const names = channels.map((item) => item.name);
+        const muted = mutedChannelNames(channels, readBells(window.localStorage));
+        setNotices(subscriptionNotices(feed.items || [], names, true, muted));
       })
       .catch(() => {
         if (active) {
@@ -156,7 +160,7 @@ export function AppShell() {
     return () => {
       active = false;
     };
-  }, [notify, token, settings.notifySubscriptions]);
+  }, [token, settings.notifySubscriptions, notify]);
 
   function onCreate() {
     if (!token) {
@@ -213,6 +217,7 @@ export function AppShell() {
   }
 
   const letter = (account?.username || account?.email || "?").slice(0, 1).toUpperCase();
+  const alert = bellBadge(unseenIds(notices, seen).length, notify);
   const canModerate = account?.role === "moderator" || account?.role === "admin";
   const chrome = headerChrome({ narrow, searchOpen });
   const channelTo = account?.channel_id ? `/channel/${account.channel_id}` : "/you";
@@ -350,13 +355,19 @@ export function AppShell() {
               <div className="notify-wrap">
                 <button
                   type="button"
-                  className="icon-button"
+                  className={alert ? "icon-button icon-button--alert" : "icon-button"}
                   aria-label="Уведомления"
                   aria-expanded={notify}
                   onClick={() => {
                     setCreateMenu(false);
                     setMenu(false);
-                    setNotify((value) => !value);
+                    setNotify((value) => {
+                      const opening = !value;
+                      if (opening) {
+                        setSeen(rememberSeen(window.localStorage, notices.map((item) => item.id)));
+                      }
+                      return opening;
+                    });
                   }}
                 >
                   <Glyph d={PATHS.bell} />

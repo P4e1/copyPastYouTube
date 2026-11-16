@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { api } from "../api/client";
+import { bellChoice, channelBell, readBells, writeBell } from "../bell";
 import { VIDEO_SORTS, channelHandle, channelTab, filterByTitle, sortChannelVideos } from "../channel";
 import { VideoCard } from "../components/VideoCard";
 import { formatSubscribers, formatVideoCount } from "../format";
@@ -25,6 +26,7 @@ export function ChannelPage() {
   const [query, setQuery] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
   const [openPlaylist, setOpenPlaylist] = useState("");
+  const [bells, setBells] = useState(() => readBells(window.localStorage));
 
   useEffect(() => {
     let active = true;
@@ -188,6 +190,20 @@ export function ChannelPage() {
               Подписаться
             </Link>
           )}
+          {channelBell({ subscribed: Boolean(channel.subscribed), ownChannel: isOwner }) === "shown" ? (
+            <button
+              type="button"
+              className="icon-button watch-bell"
+              aria-pressed={bellChoice(bells[channel.id]) === "all"}
+              aria-label={bellChoice(bells[channel.id]) === "none" ? "Уведомления канала выключены" : "Уведомления канала включены"}
+              onClick={() => {
+                const next = bellChoice(bells[channel.id]) === "none" ? "all" : "none";
+                setBells(writeBell(window.localStorage, channel.id, next));
+              }}
+            >
+              <BellIcon />
+            </button>
+          ) : null}
         </div>
       </div>
       <div className="channel-tabs" role="tablist">
@@ -458,4 +474,12 @@ async function loadTitles(playlists) {
     }),
   );
   return Object.fromEntries(pairs);
+}
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+      <path d="M12 22a2.5 2.5 0 002.45-2h-4.9A2.5 2.5 0 0012 22zm7-6v-5a6.7 6.7 0 00-5-6.46V4a2 2 0 10-4 0v.54A6.7 6.7 0 005 11v5l-1.7 1.7A1 1 0 004 20h16a1 1 0 00.7-1.7L19 16z" />
+    </svg>
+  );
 }

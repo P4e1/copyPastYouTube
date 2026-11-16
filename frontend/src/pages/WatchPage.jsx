@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
+import { bellChoice, channelBell, readBells, writeBell } from "../bell";
 import { Player } from "../components/Player";
 import { nextPlaylistPosition, playlistAction } from "../playlist";
 import { playerView } from "../player";
@@ -46,6 +47,7 @@ export function WatchPage() {
   const [panel, setPanel] = useState(null);
   const [copied, setCopied] = useState(false);
   const [playlists, setPlaylists] = useState([]);
+  const [bells, setBells] = useState(() => readBells(window.localStorage));
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [saveNote, setSaveNote] = useState("");
   const [saveError, setSaveError] = useState("");
@@ -347,10 +349,27 @@ export function WatchPage() {
                 return null;
               }
               if (control === "subscribed") {
+                const level = bellChoice(bells[video.channel_id]);
                 return (
-                  <button type="button" className="icon-button watch-bell" aria-label="Вы подписаны" onClick={toggleSubscribe}>
-                    <Icon d={ICONS.bell} />
-                  </button>
+                  <>
+                    <button type="button" className="subscribe subscribe--on" onClick={toggleSubscribe}>
+                      Вы подписаны
+                    </button>
+                    {channelBell({ subscribed: true, ownChannel: false }) === "shown" ? (
+                      <button
+                        type="button"
+                        className="icon-button watch-bell"
+                        aria-pressed={level === "all"}
+                        aria-label={level === "none" ? "Уведомления канала выключены" : "Уведомления канала включены"}
+                        onClick={() => {
+                          const next = level === "none" ? "all" : "none";
+                          setBells(writeBell(window.localStorage, video.channel_id, next));
+                        }}
+                      >
+                        <Icon d={ICONS.bell} />
+                      </button>
+                    ) : null}
+                  </>
                 );
               }
               return (

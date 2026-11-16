@@ -82,12 +82,18 @@ export function breakDue(minutes, watchedSeconds) {
   return Number(watchedSeconds) >= limit * 60;
 }
 
-export function subscriptionNotices(feed, names, enabled) {
+export function subscriptionNotices(feed, names, enabled, muted = []) {
   if (!enabled) {
     return [];
   }
   const wanted = new Set((names || []).map((name) => String(name || "").trim().toLowerCase()).filter(Boolean));
-  return (feed || []).filter((item) => wanted.has(String(item.channel_name || "").trim().toLowerCase())).slice(0, 8);
+  const quiet = new Set((muted || []).map((name) => String(name || "").trim().toLowerCase()).filter(Boolean));
+  return (feed || [])
+    .filter((item) => {
+      const name = String(item.channel_name || "").trim().toLowerCase();
+      return wanted.has(name) && !quiet.has(name);
+    })
+    .slice(0, 8);
 }
 
 export function normalizeSettings(raw) {
