@@ -5,7 +5,7 @@ import { api } from "../api/client";
 import { channelHandle } from "../channel";
 import { guideItemActive, guideYouLinks, visibleSubscriptions } from "../guide";
 import { applyKey, keyLabel, keyboardRows, toggleLayout } from "../keyboard";
-import { SHORTCUTS, THEME_OPTIONS, headerChrome, themeLabel, voiceQueryPath } from "../settings";
+import { SHORTCUTS, THEME_OPTIONS, headerChrome, subscriptionNotices, themeLabel, voiceQueryPath } from "../settings";
 import { useSettings } from "../settings-context";
 import { useSession } from "../session";
 
@@ -48,6 +48,7 @@ export function AppShell() {
   const [panel, setPanel] = useState("main");
   const [createMenu, setCreateMenu] = useState(false);
   const [notify, setNotify] = useState(false);
+  const [notices, setNotices] = useState([]);
   const [voice, setVoice] = useState("");
   const [keys, setKeys] = useState(false);
   const [subscriptions, setSubscriptions] = useState([]);
@@ -114,6 +115,30 @@ export function AppShell() {
     document.addEventListener("mousedown", onPointer);
     return () => document.removeEventListener("mousedown", onPointer);
   }, [createMenu, menu, notify]);
+
+  useEffect(() => {
+    if (!notify || !token || !settings.notifySubscriptions) {
+      setNotices([]);
+      return undefined;
+    }
+    let active = true;
+    Promise.all([api("/feed"), api("/subscriptions")])
+      .then(([feed, subs]) => {
+        if (!active) {
+          return;
+        }
+        const names = (subs.items || []).map((item) => item.name);
+        setNotices(subscriptionNotices(feed.items || [], names, true));
+      })
+      .catch(() => {
+        if (active) {
+          setNotices([]);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [notify, token, settings.notifySubscriptions]);
 
   function onCreate() {
     if (!token) {
@@ -325,8 +350,25 @@ export function AppShell() {
                         <Glyph d={PATHS.gear} />
                       </Link>
                     </div>
-                    <p>Здесь пока ничего нет</p>
-                    <p>Подписывайтесь на каналы, чтобы получать уведомления о новых видео.</p>
+                    {!settings.notifySubscriptions ? (
+                      <p>Уведомления о новых видео с подписок выключены.</p>
+                    ) : notices.length ? (
+                      <ul className="notify-list">
+                        {notices.map((item) => (
+                          <li key={item.id}>
+                            <Link to={`/watch/${item.id}`} onClick={() => setNotify(false)}>
+                              {item.title}
+                            </Link>
+                            <span>{item.channel_name}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <>
+                        <p>Здесь пока ничего нет</p>
+                        <p>Подписывайтесь на каналы, чтобы получать уведомления о новых видео.</p>
+                      </>
+                    )}
                   </div>
                 ) : null}
               </div>

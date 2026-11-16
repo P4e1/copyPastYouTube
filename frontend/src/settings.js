@@ -1,9 +1,23 @@
+import { PLAYBACK_RATES } from "./player.js";
+
 export const SETTINGS_KEY = "cpy-settings";
+
+export const BREAK_OPTIONS = [
+  { id: 0, label: "Выкл." },
+  { id: 15, label: "Каждые 15 минут" },
+  { id: 30, label: "Каждые 30 минут" },
+  { id: 45, label: "Каждые 45 минут" },
+  { id: 60, label: "Каждый час" },
+];
 
 export const DEFAULT_SETTINGS = {
   theme: "device",
   restricted: false,
   autoplayNext: false,
+  playbackRate: 1,
+  breakMinutes: 0,
+  notifySubscriptions: true,
+  saveViews: true,
 };
 
 export const THEME_OPTIONS = [
@@ -50,13 +64,47 @@ export function themeLabel(theme) {
   return (found || THEME_OPTIONS[0]).label.toLowerCase();
 }
 
+export function roleLabel(role) {
+  if (role === "admin") {
+    return "Администратор";
+  }
+  if (role === "moderator") {
+    return "Модератор";
+  }
+  return "Пользователь";
+}
+
+export function breakDue(minutes, watchedSeconds) {
+  const limit = Number(minutes) || 0;
+  if (limit <= 0) {
+    return false;
+  }
+  return Number(watchedSeconds) >= limit * 60;
+}
+
+export function subscriptionNotices(feed, names, enabled) {
+  if (!enabled) {
+    return [];
+  }
+  const wanted = new Set((names || []).map((name) => String(name || "").trim().toLowerCase()).filter(Boolean));
+  return (feed || []).filter((item) => wanted.has(String(item.channel_name || "").trim().toLowerCase())).slice(0, 8);
+}
+
 export function normalizeSettings(raw) {
   const source = raw && typeof raw === "object" ? raw : {};
   const theme = THEME_OPTIONS.some((item) => item.id === source.theme) ? source.theme : "device";
+  const playbackRate = PLAYBACK_RATES.includes(Number(source.playbackRate)) ? Number(source.playbackRate) : 1;
+  const breakMinutes = BREAK_OPTIONS.some((item) => item.id === Number(source.breakMinutes))
+    ? Number(source.breakMinutes)
+    : 0;
   return {
     theme,
     restricted: Boolean(source.restricted),
     autoplayNext: Boolean(source.autoplayNext),
+    playbackRate,
+    breakMinutes,
+    notifySubscriptions: source.notifySubscriptions === undefined ? true : Boolean(source.notifySubscriptions),
+    saveViews: source.saveViews === undefined ? true : Boolean(source.saveViews),
   };
 }
 

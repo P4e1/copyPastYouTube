@@ -9,6 +9,7 @@ import {
   seekToRatio,
 } from "../player";
 import { useSettings } from "../settings-context";
+import { breakDue } from "../settings";
 
 const ICONS = {
   play: "M8 5v14l11-7z",
@@ -36,11 +37,14 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   const [buffered, setBuffered] = useState(0);
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
-  const [rate, setRate] = useState(1);
+  const [rate, setRate] = useState(settings.playbackRate);
   const [menu, setMenu] = useState(null);
   const [chrome, setChrome] = useState(true);
   const [remaining, setRemaining] = useState(false);
   const [full, setFull] = useState(false);
+  const [breakOpen, setBreakOpen] = useState(false);
+  const watchedRef = useRef(0);
+  const lastMediaRef = useRef(0);
   const { settings, updateSettings } = useSettings();
   const [autoplay, setAutoplay] = useState(settings.autoplayNext);
   const [nudge, setNudge] = useState("");
@@ -48,6 +52,10 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   useEffect(() => {
     setAutoplay(settings.autoplayNext);
   }, [settings.autoplayNext]);
+
+  useEffect(() => {
+    setRate(settings.playbackRate);
+  }, [settings.playbackRate]);
 
   useEffect(() => {
     const node = videoRef.current;
@@ -191,7 +199,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   }
 
   function onSurfaceClick(event) {
-    if (event.target.closest(".yt-player__chrome, .yt-player__menu")) {
+    if (event.target.closest(".yt-player__chrome, .yt-player__menu, .dialog")) {
       return;
     }
     if (clickTimer.current) {
@@ -206,7 +214,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
   }
 
   function onSurfaceDoubleClick(event) {
-    if (event.target.closest(".yt-player__chrome, .yt-player__menu")) {
+    if (event.target.closest(".yt-player__chrome, .yt-player__menu, .dialog")) {
       return;
     }
     window.clearTimeout(clickTimer.current);
@@ -231,6 +239,18 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
     setDuration(Number.isFinite(video.duration) ? video.duration : 0);
     setBuffered(bufferedFraction(ranges, video.currentTime || 0, video.duration || 0));
     setPlaying(!video.paused);
+    if (!video.paused && !breakOpen) {
+      const delta = (video.currentTime || 0) - lastMediaRef.current;
+      if (delta > 0 && delta < 1.5) {
+        watchedRef.current += delta;
+      }
+    }
+    lastMediaRef.current = video.currentTime || 0;
+    if (!breakOpen && breakDue(settings.breakMinutes, watchedRef.current)) {
+      video.pause();
+      watchedRef.current = 0;
+      setBreakOpen(true);
+    }
   }
 
   function onEnded() {
@@ -396,6 +416,7 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
                   aria-checked={item === rate}
                   onClick={() => {
                     setRate(item);
+                    updateSettings({ playbackRate: item });
                     setMenu(null);
                   }}
                 >
@@ -405,6 +426,17 @@ export function Player({ src, autoPlay = false, theater = false, onTheater, onAu
               ))}
             </>
           )}
+        </div>
+      ) : null}
+      {breakOpen ? (
+        <div className="dialog" role="dialog" aria-label="Перерыв">
+          <div className="dialog__card">
+            <h2>Пора сделать перерыв</h2>
+            <p>Непрерывный просмотр достиг выбранного в настройках срока.</p>
+            <button type="button" onClick={() => setBreakOpen(false)}>
+              Продолжить
+            </button>
+          </div>
         </div>
       ) : null}
     </div>

@@ -4,10 +4,13 @@ import test from "node:test";
 import {
   DEFAULT_SETTINGS,
   SETTINGS_NAV,
+  breakDue,
   headerChrome,
   normalizeSettings,
   readSettings,
   resolveTheme,
+  roleLabel,
+  subscriptionNotices,
   themeLabel,
   voiceQueryPath,
   writeSettings,
@@ -30,19 +33,51 @@ test("theme labels match the YouTube account menu", () => {
 test("settings stay in this browser and drop unknown values", () => {
   const storage = memoryStorage();
   assert.deepEqual(readSettings(storage), DEFAULT_SETTINGS);
-  writeSettings(storage, { theme: "dark", restricted: true, autoplayNext: true, extra: 1 });
+  writeSettings(storage, {
+    theme: "dark",
+    restricted: true,
+    autoplayNext: true,
+    playbackRate: 1.5,
+    breakMinutes: 30,
+    notifySubscriptions: false,
+    saveViews: false,
+    extra: 1,
+  });
   assert.deepEqual(readSettings(storage), {
     theme: "dark",
     restricted: true,
     autoplayNext: true,
+    playbackRate: 1.5,
+    breakMinutes: 30,
+    notifySubscriptions: false,
+    saveViews: false,
   });
   storage.setItem("cpy-settings", "{");
   assert.deepEqual(readSettings(storage), DEFAULT_SETTINGS);
-  assert.deepEqual(normalizeSettings({ theme: "blue", restricted: "yes" }), {
+  assert.deepEqual(normalizeSettings({ theme: "blue", restricted: "yes", playbackRate: 9, breakMinutes: 7 }), {
     theme: "device",
     restricted: true,
     autoplayNext: false,
+    playbackRate: 1,
+    breakMinutes: 0,
+    notifySubscriptions: true,
+    saveViews: true,
   });
+});
+
+test("break reminder and subscription notices follow the settings", () => {
+  assert.equal(breakDue(0, 3600), false);
+  assert.equal(breakDue(15, 14 * 60), false);
+  assert.equal(breakDue(15, 15 * 60), true);
+  assert.equal(roleLabel("admin"), "Администратор");
+  assert.equal(roleLabel("moderator"), "Модератор");
+  assert.equal(roleLabel("user"), "Пользователь");
+  const feed = [
+    { id: "1", title: "Утро", channel_name: "author-one" },
+    { id: "2", title: "Сосед", channel_name: "author-two" },
+  ];
+  assert.deepEqual(subscriptionNotices(feed, ["author-one"], true), [feed[0]]);
+  assert.deepEqual(subscriptionNotices(feed, ["author-one"], false), []);
 });
 
 test("settings page lists the same sections as YouTube", () => {

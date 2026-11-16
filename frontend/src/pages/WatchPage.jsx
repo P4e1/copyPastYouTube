@@ -5,6 +5,7 @@ import { api } from "../api/client";
 import { Player } from "../components/Player";
 import { formatAgo, formatCompact, formatSubscribers, formatViews, formatDuration } from "../format";
 import { useSession } from "../session";
+import { useSettings } from "../settings-context";
 
 const ICONS = {
   like: "M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z",
@@ -27,6 +28,7 @@ export function WatchPage() {
   const { videoId } = useParams();
   const navigate = useNavigate();
   const { token, account } = useSession();
+  const { settings } = useSettings();
   const [video, setVideo] = useState(null);
   const [missing, setMissing] = useState(false);
   const [src, setSrc] = useState("");
@@ -83,7 +85,7 @@ export function WatchPage() {
         setReactions(reactionCard);
         setComments(commentCard.items || []);
         setFeed(feedCard.items || []);
-        if (token) {
+        if (token && settings.saveViews) {
           api(`/videos/${videoId}/view`, { method: "POST" })
             .then((view) => {
               if (active) {
@@ -101,7 +103,7 @@ export function WatchPage() {
     return () => {
       active = false;
     };
-  }, [videoId, token]);
+  }, [videoId, token, settings.saveViews]);
 
   useEffect(() => {
     if (panel !== "save" || !token || !account?.channel_id) {
