@@ -165,3 +165,9 @@ def add_playlist_item(playlist_id: str, body: PlaylistItemIn, request: Request) 
     account = _account(request)
     request.app.state.place_playlist_item(playlist_id, account.id, body.video_id, body.position)
     return {"video_id": body.video_id, "position": body.position}
+
+
+@router.delete("/playlists/{playlist_id}/items/{video_id}", status_code=204)
+def remove_playlist_item(playlist_id: str, video_id: str, request: Request) -> None:
+    account = _account(request)
+    request.app.state.drop_playlist_item(playlist_id, account.id, video_id)

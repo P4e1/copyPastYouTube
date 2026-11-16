@@ -97,6 +97,9 @@ class ChannelRepository:
     def add_item(self, playlist_id: str, video_id: str, position: int) -> None:
         raise NotImplementedError
 
+    def remove_item(self, playlist_id: str, video_id: str) -> None:
+        raise NotImplementedError
+
     def list_playlists(self, channel_id: str) -> list[PlaylistCard]:
         raise NotImplementedError
 
@@ -211,6 +214,15 @@ def add_playlist_item(
     if view_access(snapshot, actor_id) is View.denied:
         raise NotFoundError("Не найдено")
     channels.add_item(playlist_id, video_id, position)
+
+
+def remove_playlist_item(channels: ChannelRepository, playlist_id: str, actor_id: str, video_id: str) -> None:
+    playlist = channels.get_playlist(playlist_id)
+    if playlist is None:
+        raise NotFoundError("Не найдено")
+    owner_id, _channel_id = playlist
+    ensure_channel_owner(owner_id, actor_id)
+    channels.remove_item(playlist_id, video_id)
 
 
 def playlists_of(channels: ChannelRepository, channel_id: str, viewer_id: str | None) -> list[PlaylistCard]:

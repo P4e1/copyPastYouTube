@@ -68,4 +68,7 @@ def client(app):
         def patch(self, path, json=None, headers=None):
             return self.request("PATCH", path, json=json, headers=headers)
 
+        def delete(self, path, headers=None):
+            return self.request("DELETE", path, headers=headers)
+
     return SyncClient()

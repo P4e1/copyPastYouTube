@@ -94,9 +94,13 @@ class SqlChannelRepository:
         row = self._session.get(PlaylistItemRow, {"playlist_id": playlist_id, "video_id": video_id})
         if row is None:
             self._session.add(PlaylistItemRow(playlist_id=playlist_id, video_id=video_id, position=position))
-        else:
-            row.position = position
-        self._session.flush()
+            self._session.flush()
+
+    def remove_item(self, playlist_id: str, video_id: str) -> None:
+        row = self._session.get(PlaylistItemRow, {"playlist_id": playlist_id, "video_id": video_id})
+        if row is not None:
+            self._session.delete(row)
+            self._session.flush()
 
     def list_playlists(self, channel_id: str) -> list[PlaylistCard]:
         rows = self._session.scalars(select(PlaylistRow).where(PlaylistRow.channel_id == channel_id))

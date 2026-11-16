@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { api } from "../api/client";
 import { Player } from "../components/Player";
+import { nextPlaylistPosition, playlistAction } from "../playlist";
 import { playerView } from "../player";
 import { formatAgo, formatCompact, formatSubscribers, formatViews, formatDuration } from "../format";
 import { subscribeControl } from "../subscribe";
@@ -208,13 +209,22 @@ export function WatchPage() {
 
   async function saveTo(playlist) {
     setSaveError("");
-    const next = playlist.items.reduce((max, item) => Math.max(max, item.position), 0) + 1;
+    const action = playlistAction(playlist.items, videoId);
     try {
-      await api(`/playlists/${playlist.id}/items`, {
-        method: "POST",
-        body: { video_id: videoId, position: next },
-      });
-      setSaveNote(`Добавлено в «${playlist.title}»`);
+      if (action === "remove") {
+        await api(`/playlists/${playlist.id}/items/${videoId}`, { method: "DELETE" });
+        setSaveNote(`Удалено из «${playlist.title}»`);
+      } else {
+        await api(`/playlists/${playlist.id}/items`, {
+          method: "POST",
+          body: { video_id: videoId, position: nextPlaylistPosition(playlist.items) },
+        });
+        setSaveNote(`Добавлено в «${playlist.title}»`);
+      }
+      if (account?.channel_id) {
+        const data = await api(`/playlists?channel_id=${account.channel_id}`);
+        setPlaylists(data.items || []);
+      }
     } catch (exc) {
       setSaveError(exc.message);
     }
@@ -395,7 +405,12 @@ export function WatchPage() {
                 <ul className="watch-pop__list">
                   {playlists.map((playlist) => (
                     <li key={playlist.id}>
-                      <button type="button" onClick={() => saveTo(playlist)}>
+                      <button
+                        type="button"
+                        aria-pressed={playlistAction(playlist.items, videoId) === "remove"}
+                        onClick={() => saveTo(playlist)}
+                      >
+                        {playlistAction(playlist.items, videoId) === "remove" ? "✓ " : ""}
                         {playlist.title}
                       </button>
                     </li>

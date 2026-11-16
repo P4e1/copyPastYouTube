@@ -38,7 +38,7 @@ PostgreSQL. Схема появляется миграциями Alembic в `bac
 
 ### playlists и playlist_items
 
-Плейлист автора. У плейлиста: id, channel_id, title, visibility. У элемента: playlist_id, video_id, position. Порядок на экране канала совпадает с position.
+Плейлист автора. У плейлиста: id, channel_id, title, visibility. У элемента: playlist_id, video_id, position. Порядок на экране канала совпадает с position. Повторная запись той же пары не создаёт вторую строку и не меняет position. Удаление пары убирает ролик из плейлиста.
 
 ### reports
 

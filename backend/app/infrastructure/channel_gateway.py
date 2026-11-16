@@ -10,6 +10,7 @@ from app.application.channels import (
     ChannelRecord,
     PlaylistCard,
     add_playlist_item,
+    remove_playlist_item,
     create_playlist,
     list_subscriptions,
     open_channel,
@@ -70,6 +71,11 @@ def open_playlist(channel_id: str, actor_id: str, title: str, visibility: str) -
 def place_playlist_item(playlist_id: str, actor_id: str, video_id: str, position: int) -> None:
     with _session_scope() as session:
         add_playlist_item(SqlChannelRepository(session), playlist_id, actor_id, video_id, position)
+
+
+def drop_playlist_item(playlist_id: str, actor_id: str, video_id: str) -> None:
+    with _session_scope() as session:
+        remove_playlist_item(SqlChannelRepository(session), playlist_id, actor_id, video_id)
 
 
 def channel_playlists(channel_id: str, viewer_id: str | None) -> list[PlaylistCard]:

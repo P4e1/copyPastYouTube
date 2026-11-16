@@ -8,7 +8,7 @@ create_app собирает FastAPI, проверку PostgreSQL, Swagger /docs 
 - videos: POST /videos, GET /videos/{id}, GET /feed, GET /search, GET /history, GET /subscriptions/feed
 - engagement: POST /videos/{id}/view, POST /videos/{id}/like, GET /videos/{id}/reactions, GET и POST /videos/{id}/comments, DELETE /videos/{id}/comments/{comment_id}
 - channels: GET /channels/{id}, PATCH /channels/{id}, POST и DELETE /channels/{id}/subscribe, GET /subscriptions
-- playlists: GET и POST /playlists, POST /playlists/{id}/items
+- playlists: GET и POST /playlists, POST и DELETE /playlists/{id}/items
 - moderation: POST /reports, GET /moderation/reports, POST /moderation/videos/{id}/hide, POST /moderation/videos/{id}/restore
 - admin: PATCH /admin/users/{id}/role
 - media: POST /videos/{id}/complete, GET /videos/{id}/playback
@@ -27,6 +27,7 @@ from app.infrastructure.db import check_database, init_engine
 from app.infrastructure.channel_gateway import (
     channel_card,
     channel_playlists,
+    drop_playlist_item,
     open_playlist,
     place_playlist_item,
     subscribe_channel,
@@ -118,6 +119,7 @@ def create_app() -> FastAPI:
     app.state.unsubscribe_channel = unsubscribe_channel
     app.state.open_playlist = open_playlist
     app.state.place_playlist_item = place_playlist_item
+    app.state.drop_playlist_item = drop_playlist_item
     app.state.channel_playlists = channel_playlists
     app.state.file_report = file_report
     app.state.queue_reports = queue_reports

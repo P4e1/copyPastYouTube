@@ -218,3 +218,40 @@ def test_subscription_feed_lists_ready_public_videos_of_followed_channels(client
     assert draft not in {item["id"] for item in listed.json()["items"]}
     assert foreign not in {item["id"] for item in listed.json()["items"]}
 
+
+def test_playlist_keeps_a_video_once_and_can_drop_it(client):
+    owner = _auth(client)
+    stranger = _auth(client)
+    video_id = _video(client, owner["headers"], title="В подборке")
+    _set_status(video_id, "ready")
+    created = client.post(
+        "/playlists",
+        json={"channel_id": owner["channel_id"], "title": "Подборка", "visibility": "public"},
+        headers=owner["headers"],
+    )
+    playlist_id = created.json()["id"]
+    client.post(
+        f"/playlists/{playlist_id}/items",
+        json={"video_id": video_id, "position": 1},
+        headers=owner["headers"],
+    )
+    again = client.post(
+        f"/playlists/{playlist_id}/items",
+        json={"video_id": video_id, "position": 9},
+        headers=owner["headers"],
+    )
+    listed = client.get(f"/playlists?channel_id={owner['channel_id']}", headers=owner["headers"])
+    playlist = next(item for item in listed.json()["items"] if item["id"] == playlist_id)
+
+    assert again.status_code == 201
+    assert playlist["items"] == [{"video_id": video_id, "position": 1}]
+
+    denied = client.delete(f"/playlists/{playlist_id}/items/{video_id}", headers=stranger["headers"])
+    removed = client.delete(f"/playlists/{playlist_id}/items/{video_id}", headers=owner["headers"])
+    after = client.get(f"/playlists?channel_id={owner['channel_id']}", headers=owner["headers"])
+    empty = next(item for item in after.json()["items"] if item["id"] == playlist_id)
+
+    assert denied.status_code == 403
+    assert removed.status_code == 204
+    assert empty["items"] == []
+
