@@ -1,4 +1,5 @@
 .env
+.compose-project
 .venv/
 __pycache__/
 .pytest_cache/

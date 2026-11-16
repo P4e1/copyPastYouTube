@@ -149,3 +149,39 @@ def test_deploy_script_clones_the_public_repo():
     assert "https://github.com/P4e1/copyPastYouTube.git" in text
     assert "write_env.sh" in text
     assert "git clone" in text
+    assert "project_name.sh" in text
+    assert "COMPOSE_PROJECT_NAME" in text
+    assert "pull --ff-only" in text
+
+
+def test_each_checkout_gets_its_own_compose_project(tmp_path):
+    first = tmp_path / "realese01" / "copyPastYouTube"
+    second = tmp_path / "other" / "copyPastYouTube"
+    first.mkdir(parents=True)
+    second.mkdir(parents=True)
+    script = ROOT / "scripts" / "project_name.sh"
+
+    own = subprocess.check_output(["bash", str(script), str(first)], text=True).strip()
+    other = subprocess.check_output(["bash", str(script), str(second)], text=True).strip()
+
+    assert own.startswith("cpy-")
+    assert "realese01" in own
+    assert own != other
+
+
+def test_taken_port_moves_to_the_next_free_one():
+    script = ROOT / "scripts" / "pick_port.sh"
+    taken = subprocess.check_output(["bash", str(script), "8080", "8080", "8000"], text=True).strip()
+    free = subprocess.check_output(["bash", str(script), "8080"], text=True).strip()
+
+    assert taken == "8081"
+    assert free == "8080"
+
+
+def test_compose_ports_follow_the_checkout_env():
+    text = (ROOT / "docker-compose.yml").read_text(encoding="utf-8")
+
+    assert "${FRONTEND_PORT:-8080}:80" in text
+    assert "${API_PORT:-8000}:8000" in text
+    assert "${MINIO_PORT:-9000}:9000" in text
+    assert "http://localhost:${FRONTEND_PORT:-8080}" in text
