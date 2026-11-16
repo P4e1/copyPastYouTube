@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { bellBadge, bellChoice, channelBell, mutedChannelNames, unseenIds } from "./bell.js";
+import { bellBadge, bellChoice, channelBell, mutedChannelNames, settingsBellRows, unseenIds } from "./bell.js";
 import { subscriptionNotices } from "./settings.js";
 
 test("a subscribed channel can mute its own bell", () => {
@@ -25,4 +26,15 @@ test("a subscribed channel can mute its own bell", () => {
   assert.equal(bellBadge(1, false), true);
   assert.equal(bellBadge(1, true), false);
   assert.equal(bellBadge(0, false), false);
+});
+
+test("notification settings repeat the channel bell", () => {
+  assert.deepEqual(settingsBellRows([{ id: "a", name: "Один" }, { id: "b", name: "Два" }], { b: "none" }), [
+    { id: "a", name: "Один", level: "all" },
+    { id: "b", name: "Два", level: "none" },
+  ]);
+  assert.deepEqual(settingsBellRows([], { a: "none" }), []);
+  const page = readFileSync(new URL("./pages/SettingsPage.jsx", import.meta.url), "utf8");
+  assert.match(page, /settingsBellRows/);
+  assert.match(page, /Уведомления канала/);
 });

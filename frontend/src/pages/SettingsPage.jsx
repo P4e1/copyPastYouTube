@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
 
+import { api } from "../api/client";
+import { readBells, settingsBellRows, writeBell } from "../bell";
 import { channelHandle } from "../channel";
 import { PLAYBACK_RATES, rateLabel } from "../player";
 import { BREAK_OPTIONS, SETTINGS_NAV, THEME_OPTIONS, roleLabel } from "../settings";
@@ -10,8 +13,31 @@ export function SettingsPage() {
   const navigate = useNavigate();
   const { token, account, logout } = useSession();
   const { settings, updateSettings } = useSettings();
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [bells, setBells] = useState(() => readBells(window.localStorage));
   const { section } = useParams();
   const current = SETTINGS_NAV.some((item) => item.id === section) ? section : "account";
+
+  useEffect(() => {
+    if (current !== "notifications") {
+      return undefined;
+    }
+    let active = true;
+    api("/subscriptions")
+      .then((data) => {
+        if (active) {
+          setSubscriptions(data.items || []);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setSubscriptions([]);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [current]);
 
   if (!token) {
     return <Navigate to="/login" replace />;
@@ -88,6 +114,26 @@ export function SettingsPage() {
                 />
               </label>
               <p>Колокол в шапке показывает новые ролики этих каналов из ленты. Письма и уведомления браузера эта копия не отправляет.</p>
+              <h2>Уведомления канала</h2>
+              {settingsBellRows(subscriptions, bells).length === 0 ? (
+                <p>Подписок пока нет</p>
+              ) : (
+                <ul className="settings__bells">
+                  {settingsBellRows(subscriptions, bells).map((row) => (
+                    <li key={row.id}>
+                      <span>{row.name}</span>
+                      <select
+                        aria-label={`Уведомления канала ${row.name}`}
+                        value={row.level}
+                        onChange={(event) => setBells(writeBell(window.localStorage, row.id, event.target.value))}
+                      >
+                        <option value="all">Все</option>
+                        <option value="none">Ничего</option>
+                      </select>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           ) : null}
           {current === "playback" ? (

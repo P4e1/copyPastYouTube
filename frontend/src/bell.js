@@ -27,6 +27,14 @@ export function bellBadge(unseen, open) {
   return unseen > 0 && !open;
 }
 
+export function settingsBellRows(channels, levels) {
+  return (channels || []).map((channel) => ({
+    id: channel.id,
+    name: channel.name,
+    level: bellChoice(levels?.[channel.id]),
+  }));
+}
+
 export function readBells(storage) {
   try {
     const parsed = JSON.parse(storage.getItem(BELL_KEY) || "{}");

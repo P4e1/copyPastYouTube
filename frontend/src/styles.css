@@ -655,6 +655,30 @@ svg {
   padding: 0 8px;
 }
 
+.settings__bells {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.settings__bells li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.settings__bells select {
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--field);
+  color: var(--text);
+  padding: 0 8px;
+}
+
 .settings__action {
   height: 36px;
   margin-top: 16px;
