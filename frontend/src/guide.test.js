@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { guideItemActive, guideYouLinks, visibleSubscriptions } from "./guide.js";
+import { guideItemActive, guideMode, guideYouLinks, visibleSubscriptions } from "./guide.js";
 import { VIDEO_SORTS, channelTab } from "./channel.js";
 
 test("channel videos sort uses the YouTube chips", () => {
@@ -20,6 +21,16 @@ test("channel tab query stays on a known tab", () => {
   assert.equal(channelTab("playlists"), "playlists");
   assert.equal(channelTab("nope"), "home");
   assert.equal(channelTab(null), "home");
+});
+
+test("closed wide guide stays a narrow icon rail", () => {
+  assert.equal(guideMode({ open: true, narrow: false }), "full");
+  assert.equal(guideMode({ open: false, narrow: false }), "mini");
+  assert.equal(guideMode({ open: true, narrow: true }), "overlay");
+  assert.equal(guideMode({ open: false, narrow: true }), "hidden");
+  const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
+  const blocks = [...css.matchAll(/\.shell:not\(\.shell--nav-open\) \.sidebar\s*\{[^}]*\}/g)].map((match) => match[0]);
+  assert.ok(blocks.some((block) => /width:\s*72px/.test(block) && !/display:\s*none/.test(block)));
 });
 
 test("guide shows the first subscriptions until it is expanded", () => {

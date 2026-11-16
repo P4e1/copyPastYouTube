@@ -1,3 +1,10 @@
+export function guideMode({ open, narrow }) {
+  if (narrow) {
+    return open ? "overlay" : "hidden";
+  }
+  return open ? "full" : "mini";
+}
+
 export function visibleSubscriptions(items, expanded, limit = 7) {
   if (expanded || items.length <= limit) {
     return items;

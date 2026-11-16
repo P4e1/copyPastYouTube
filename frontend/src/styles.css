@@ -808,7 +808,46 @@ svg {
 }
 
 .shell:not(.shell--nav-open) .sidebar {
+  width: 72px;
+  align-items: center;
+  padding: 4px 0 12px;
+}
+
+.shell:not(.shell--nav-open) .sidebar > a,
+.shell:not(.shell--nav-open) .guide-block > a,
+.shell:not(.shell--nav-open) .guide-head,
+.shell:not(.shell--nav-open) .guide-note .signin {
+  flex-direction: column;
+  gap: 6px;
+  width: 64px;
+  height: 74px;
+  margin: 0 auto;
+  padding: 16px 0 14px;
+  font-size: 10px;
+  justify-content: center;
+  text-align: center;
+}
+
+.shell:not(.shell--nav-open) .guide-block {
+  width: 100%;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.shell:not(.shell--nav-open) .guide-sub,
+.shell:not(.shell--nav-open) .guide-more,
+.shell:not(.shell--nav-open) .guide-head ~ a,
+.shell:not(.shell--nav-open) .guide-note p {
   display: none;
+}
+
+.guide-head svg {
+  display: none;
+}
+
+.shell:not(.shell--nav-open) .guide-head svg {
+  display: block;
 }
 
 .auth {

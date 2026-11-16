@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate, useSearchParams } from
 
 import { api } from "../api/client";
 import { channelHandle } from "../channel";
-import { guideItemActive, guideYouLinks, visibleSubscriptions } from "../guide";
+import { guideItemActive, guideMode, guideYouLinks, visibleSubscriptions } from "../guide";
 import { applyKey, keyLabel, keyboardRows, toggleLayout } from "../keyboard";
 import { SHORTCUTS, THEME_OPTIONS, headerChrome, subscriptionNotices, themeLabel, voiceQueryPath } from "../settings";
 import { useSettings } from "../settings-context";
@@ -54,6 +54,7 @@ export function AppShell() {
   const [subscriptions, setSubscriptions] = useState([]);
   const [subsOpen, setSubsOpen] = useState(false);
   const [youOpen, setYouOpen] = useState(true);
+  const miniGuide = guideMode({ open, narrow }) === "mini";
   const voiceRef = useRef(null);
 
   useEffect(() => {
@@ -540,9 +541,17 @@ export function AppShell() {
           </div>
           {token ? (
             <div className="guide-block">
-              <button type="button" className="guide-head" aria-expanded={youOpen} onClick={() => setYouOpen((value) => !value)}>
-                Вы
-              </button>
+              {miniGuide ? (
+                <Link className="guide-head" to={account?.channel_id ? `/channel/${account.channel_id}` : "/you"} onClick={closeIfNarrow}>
+                  <Glyph d={PATHS.you} />
+                  Вы
+                </Link>
+              ) : (
+                <button type="button" className="guide-head" aria-expanded={youOpen} onClick={() => setYouOpen((value) => !value)}>
+                  <Glyph d={PATHS.you} />
+                  Вы
+                </button>
+              )}
               {youOpen
                 ? guideYouLinks(account).map((item) => (
                     <Link
