@@ -99,7 +99,11 @@ ensure_docker_access() {
   log "Добавляю ${USER} в группу docker"
   $SUDO usermod -aG docker "$USER"
   export CPY_DOCKER_REEXEC=1
-  exec sg docker -c "bash $(printf '%q' "$script_dir/deploy.sh")"
+  # Новая группа в текущую сессию сама не попадает: перезапускаемся с группой docker.
+  if command -v sg >/dev/null 2>&1; then
+    exec sg docker -c "bash $(printf '%q' "$script_dir/deploy.sh")"
+  fi
+  exec sudo -E -u "$USER" -g docker bash "$script_dir/deploy.sh"
 }
 
 # --- получение репозитория ---------------------------------------------------
