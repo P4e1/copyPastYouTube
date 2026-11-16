@@ -6,9 +6,9 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { HomePage } from "./pages/HomePage";
 import { ModerationPage } from "./pages/ModerationPage";
 import { LoginPage } from "./pages/LoginPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { SearchPage } from "./pages/SearchPage";
+import { ShortsPage } from "./pages/ShortsPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SubscriptionsPage } from "./pages/SubscriptionsPage";
 import { UploadPage } from "./pages/UploadPage";
@@ -25,7 +25,7 @@ export function App() {
         <Route path="/upload" element={<UploadPage />} />
         <Route path="/watch/:videoId" element={<WatchPage />} />
         <Route path="/search" element={<SearchPage />} />
-        <Route path="/shorts" element={<PlaceholderPage text="Смотреть пока нечего" />} />
+        <Route path="/shorts" element={<ShortsPage />} />
         <Route path="/subscriptions" element={<SubscriptionsPage />} />
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/moderation" element={<ModerationPage />} />
